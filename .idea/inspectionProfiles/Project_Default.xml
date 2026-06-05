@@ -1,0 +1,38 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="annotated-doc" />
+          <option value="annotated-types" />
+          <option value="anyio" />
+          <option value="bcrypt" />
+          <option value="click" />
+          <option value="colorama" />
+          <option value="ecdsa" />
+          <option value="fastapi" />
+          <option value="greenlet" />
+          <option value="h11" />
+          <option value="idna" />
+          <option value="loguru" />
+          <option value="passlib" />
+          <option value="pyasn1" />
+          <option value="pydantic" />
+          <option value="pydantic_core" />
+          <option value="python-dotenv" />
+          <option value="python-jose" />
+          <option value="redis" />
+          <option value="rsa" />
+          <option value="six" />
+          <option value="SQLAlchemy" />
+          <option value="starlette" />
+          <option value="typing-inspection" />
+          <option value="typing_extensions" />
+          <option value="uvicorn" />
+          <option value="win32_setctime" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

@@ -20,6 +20,7 @@ from ..schemas.chat import (
     MessageIn,
     MessageOut,
 )
+from ..agents.conversation_agent import generate_ai_reply
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -31,40 +32,12 @@ SCENARIO_NAMES: dict[int, str] = {
     4: "旅行",
 }
 
-# Scenario id → opening AI greeting
+# Scenario id → opening AI greeting (fixed — not LLM-generated)
 OPENING_LINES: dict[int, str] = {
     1: "请简单介绍一下你自己。",
     2: "欢迎光临！请问需要点些什么？",
     3: "我们来讨论一下第三季度的项目时间表。",
     4: "你好！请问你要去哪里？",
-}
-
-# Scenario id → scripted AI reply rounds
-CONVERSATION_SCRIPTS: dict[int, list[str]] = {
-    1: [
-        "你为什么选择了这个专业？",
-        "你的优点和缺点是什么？",
-        "五年后你希望自己是什么样的？",
-        "很好！下面我来给你一些关于刚才回答的反馈。",
-    ],
-    2: [
-        "还需要其他的吗？",
-        "好的，请稍等。还需要加一份甜点吗？",
-        "没问题，一共是 68 元。在这里吃还是带走？",
-        "好的，祝您用餐愉快！",
-    ],
-    3: [
-        "你能详细说明一下为什么移动端是优先事项吗？",
-        "资源方面有什么需要考虑的？",
-        "好，那下周一我们开始执行这个计划。",
-        "感谢大家的参与，会议到此结束。",
-    ],
-    4: [
-        "你计划什么时候出发？",
-        "好的，我帮你查一下可选航班。有早上的 CA1234 和下午的 MU5678。",
-        "已为你预订了早上的 CA1234 航班，还有需要帮助的吗？",
-        "祝您旅途愉快！",
-    ],
 }
 
 
@@ -155,16 +128,19 @@ async def send_message(
 
     now = datetime(2026, 6, 6, 10, 0)
 
-    # Count user messages so far to pick next script line
+    # Load all existing dialogues for context
     result = await db.execute(
         select(Dialogue).where(Dialogue.session_id == session_id)
     )
     all_dialogues = result.scalars().all()
-    user_rounds = sum(1 for d in all_dialogues if d.user_text is not None)
 
-    scenario_id = _scenario_name_to_id(session.scenario)
-    script = CONVERSATION_SCRIPTS.get(scenario_id, ["好的，明白了。"])
-    ai_text = script[min(user_rounds, len(script) - 1)]
+    # Generate AI reply via LLM agent (with script fallback if LLM unavailable)
+    ai_text = await generate_ai_reply(
+        scenario=session.scenario,
+        difficulty=session.difficulty,
+        dialogues=list(all_dialogues),
+        current_user_text=body.message,
+    )
 
     # Save user message
     db.add(Dialogue(session_id=session_id, user_text=body.message, timestamp=now))

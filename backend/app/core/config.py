@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # LLM
     llm_api_key: str = "your-api-key-here"
+    llm_base_url: str = "https://api.deepseek.com"
+    llm_model: str = "deepseek-chat"
 
     # Database
     db_path: str = "./data/speakmate.db"

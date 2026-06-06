@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { dashboardStats } from '../mock/mock_data';
@@ -5,7 +6,19 @@ import ScenarioCard from '../components/ScenarioCard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { scenarios, selectedScenarioId, selectScenario, startSession } = useStore();
+  const {
+    scenarios,
+    scenariosLoading,
+    scenariosError,
+    loadScenarios,
+    selectedScenarioId,
+    selectScenario,
+    startSession,
+  } = useStore();
+
+  useEffect(() => {
+    loadScenarios();
+  }, [loadScenarios]);
 
   const handleStart = () => {
     if (!selectedScenarioId) return;
@@ -32,14 +45,24 @@ export default function Dashboard() {
       {/* Scenario Selection */}
       <h2 className="text-lg font-semibold text-text mb-4 text-center">选择场景</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto w-full mb-10">
-        {scenarios.map((s) => (
-          <ScenarioCard
-            key={s.id}
-            scenario={s}
-            selected={s.id === selectedScenarioId}
-            onSelect={selectScenario}
-          />
-        ))}
+        {scenariosLoading ? (
+          <div className="col-span-full text-center text-muted text-sm py-8">
+            加载场景中...
+          </div>
+        ) : scenariosError ? (
+          <div className="col-span-full text-center text-red-500 text-sm py-8">
+            加载失败：{scenariosError}
+          </div>
+        ) : (
+          scenarios.map((s) => (
+            <ScenarioCard
+              key={s.id}
+              scenario={s}
+              selected={s.id === selectedScenarioId}
+              onSelect={selectScenario}
+            />
+          ))
+        )}
       </div>
 
       {/* Start Button — bottom center, wider rounded */}

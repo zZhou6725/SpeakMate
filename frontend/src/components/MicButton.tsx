@@ -5,25 +5,25 @@ export default function MicButton() {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Ripple rings when recording */}
-      <div className="relative flex items-center justify-center" style={{ width: 120, height: 120 }}>
+      {/* Large mic circle with ripple */}
+      <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
         {recording && (
           <>
             <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
-            <span className="absolute inset-2 rounded-full bg-primary/15 animate-pulse" />
-            <span className="absolute inset-4 rounded-full bg-primary/20" />
+            <span className="absolute inset-3 rounded-full bg-primary/15 animate-pulse" />
+            <span className="absolute inset-6 rounded-full bg-primary/20" />
           </>
         )}
         <button
           onClick={() => setRecording((r) => !r)}
-          className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+          className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
             recording
               ? 'bg-red-500 scale-110 shadow-red-200'
-              : 'bg-primary hover:bg-blue-700 hover:scale-105'
+              : 'bg-primary hover:bg-blue-700 hover:scale-105 shadow-blue-200'
           }`}
         >
           <svg
-            className="w-6 h-6 text-white"
+            className="w-8 h-8 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

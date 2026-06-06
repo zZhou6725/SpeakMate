@@ -87,8 +87,10 @@ export default function History() {
             <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold text-muted uppercase tracking-wider">
               <th className="px-5 py-3">日期</th>
               <th className="px-5 py-3">场景</th>
-              <th className="px-5 py-3">得分</th>
-              <th className="px-5 py-3">时长</th>
+              <th className="px-5 py-3">总分</th>
+              <th className="px-5 py-3">练习时长</th>
+              <th className="px-5 py-3">语法</th>
+              <th className="px-5 py-3">发音</th>
               <th className="px-5 py-3 text-right">操作</th>
             </tr>
           </thead>
@@ -96,14 +98,14 @@ export default function History() {
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i} className="border-b border-gray-50">
-                  <td colSpan={5} className="px-5 py-4">
+                  <td colSpan={7} className="px-5 py-4">
                     <LoadingPlaceholder type="text" lines={1} />
                   </td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-5 py-12 text-center text-muted text-sm">
+                <td colSpan={7} className="px-5 py-12 text-center text-muted text-sm">
                   暂无练习记录。
                 </td>
               </tr>
@@ -113,25 +115,27 @@ export default function History() {
                   key={entry.id}
                   className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
                 >
-                  <td className="px-5 py-4 text-text-normal font-medium">{entry.date}</td>
+                  <td className="px-5 py-4 text-text font-medium">{entry.date}</td>
                   <td className="px-5 py-4 text-muted">{entry.scenario}</td>
                   <td className="px-5 py-4">
-                    <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                       {entry.score}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-muted">{entry.duration}</td>
+                  <td className="px-5 py-4 text-muted">{entry.grammar}</td>
+                  <td className="px-5 py-4 text-muted">{entry.pronunciation}</td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleViewReport(entry.id)}
-                        className="px-3 py-1.5 rounded-card text-xs font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors"
+                        className="px-3 py-1.5 rounded-card text-xs font-medium text-white bg-primary hover:bg-blue-700 transition-colors"
                       >
                         查看报告
                       </button>
                       <button
                         onClick={() => handleReplay(entry)}
-                        className="px-3 py-1.5 rounded-card text-xs font-medium text-white bg-primary hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1.5 rounded-card text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
                       >
                         复现练习
                       </button>

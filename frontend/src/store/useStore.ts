@@ -1,5 +1,13 @@
 import { create } from 'zustand';
-import type { Scenario, ChatMessage, FeedbackData, RadarData } from '../types';
+import type {
+  Scenario,
+  ChatMessage,
+  FeedbackData,
+  RadarData,
+  DashboardStats,
+  HistoryEntry,
+  HistoryFiltersType,
+} from '../types';
 import {
   conversation as mockConversation,
   feedback as mockFeedback,
@@ -7,6 +15,8 @@ import {
   getConversationByScenario,
 } from '../mock/mock_data';
 import { fetchScenarios } from '../api/scenarios';
+import { fetchDashboardStats } from '../api/dashboard';
+import { fetchHistory, fetchHistoryFilters } from '../api/history';
 
 interface AppState {
   // Scenarios
@@ -16,6 +26,20 @@ interface AppState {
   loadScenarios: () => Promise<void>;
   selectedScenarioId: number | null;
   selectScenario: (id: number) => void;
+
+  // Dashboard stats
+  dashboardStats: DashboardStats;
+  dashboardLoading: boolean;
+  dashboardError: string | null;
+  loadDashboardStats: () => Promise<void>;
+
+  // History
+  history: HistoryEntry[];
+  historyFilters: HistoryFiltersType;
+  historyLoading: boolean;
+  historyError: string | null;
+  loadHistory: (params?: { scenario?: string; timeRange?: string }) => Promise<void>;
+  loadHistoryFilters: () => Promise<void>;
 
   // Practice session (still mock for now, will be replaced in Section 4)
   conversation: ChatMessage[];
@@ -49,6 +73,41 @@ export const useStore = create<AppState>((set, get) => ({
 
   selectedScenarioId: null,
   selectScenario: (id) => set({ selectedScenarioId: id }),
+
+  dashboardStats: { totalPractice: 0, averageScore: 0, bestScore: 0 },
+  dashboardLoading: false,
+  dashboardError: null,
+  loadDashboardStats: async () => {
+    set({ dashboardLoading: true, dashboardError: null });
+    try {
+      const data = await fetchDashboardStats();
+      set({ dashboardStats: data, dashboardLoading: false });
+    } catch (e) {
+      set({ dashboardError: String(e), dashboardLoading: false });
+    }
+  },
+
+  history: [],
+  historyFilters: { scenarios: ['全部'], timeRanges: ['本周', '本月', '全部'] },
+  historyLoading: false,
+  historyError: null,
+  loadHistory: async (params) => {
+    set({ historyLoading: true, historyError: null });
+    try {
+      const data = await fetchHistory(params);
+      set({ history: data, historyLoading: false });
+    } catch (e) {
+      set({ historyError: String(e), historyLoading: false });
+    }
+  },
+  loadHistoryFilters: async () => {
+    try {
+      const data = await fetchHistoryFilters();
+      set({ historyFilters: data });
+    } catch {
+      // keep defaults
+    }
+  },
 
   conversation: [],
   isSessionActive: false,

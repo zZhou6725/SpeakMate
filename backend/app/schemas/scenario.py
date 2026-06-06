@@ -8,5 +8,4 @@ class ScenarioOut(BaseModel):
     name: str
     difficulty: str  # "简单" | "中等" | "困难"
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

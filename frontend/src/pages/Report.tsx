@@ -1,26 +1,53 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getSessionById, practiceSessions } from '../mock/mock_data';
 import ScoreRing from '../components/ScoreRing';
 import RadarChart from '../components/RadarChart';
 import FeedbackPanel from '../components/FeedbackPanel';
 import ChatBubble from '../components/ChatBubble';
+import { fetchReport } from '../api/reports';
 import type { PracticeSession } from '../types';
 
 export default function Report() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const sessionId = parseInt(searchParams.get('id') ?? '1', 10);
+  const sessionId = parseInt(searchParams.get('id') ?? '0', 10);
 
-  const session = getSessionById(sessionId) ?? practiceSessions[0];
+  const [session, setSession] = useState<PracticeSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    setLoading(true);
+    setError(null);
+    fetchReport(sessionId)
+      .then((data) => {
+        setSession(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(String(e));
+        setLoading(false);
+      });
+  }, [sessionId]);
 
   const handleExport = () => {
     // Placeholder: future export functionality
+    window.open(`/api/reports/${sessionId}/export`, '_blank');
   };
 
-  if (!session) {
+  if (loading) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted text-lg">报告未找到。</p>
+        <p className="text-muted text-lg">加载报告数据...</p>
+      </div>
+    );
+  }
+
+  if (error || !session) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-muted text-lg">{error || '报告未找到。'}</p>
         <button
           onClick={() => navigate('/history')}
           className="mt-4 px-6 py-2 rounded-card bg-primary text-white font-medium hover:bg-blue-700 transition-colors"
@@ -82,9 +109,13 @@ export default function Report() {
         <div className="lg:col-span-2 bg-white rounded-card p-4 shadow-sm border border-gray-100">
           <h3 className="text-sm font-semibold text-text mb-4">对话记录</h3>
           <div className="max-h-80 overflow-y-auto">
-            {session.conversation.map((msg, i) => (
-              <ChatBubble key={i} role={msg.role} message={msg.message} />
-            ))}
+            {session.conversation.length === 0 ? (
+              <p className="text-muted text-sm py-8 text-center">暂无对话记录。</p>
+            ) : (
+              session.conversation.map((msg, i) => (
+                <ChatBubble key={i} role={msg.role} message={msg.message} />
+              ))
+            )}
           </div>
         </div>
 

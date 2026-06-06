@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { useMockData } from '../hooks/useMockData';
 import { history, historyFilters } from '../mock/mock_data';
-import LoadingPlaceholder from '../components/LoadingPlaceholder';
 import type { HistoryEntry } from '../types';
 
 export default function History() {
   const navigate = useNavigate();
   const { selectScenario, startSession } = useStore();
-  const { data: entries, loading } = useMockData<HistoryEntry[]>(() => history, 400);
 
   const [scenarioFilter, setScenarioFilter] = useState('全部');
   const [timeFilter, setTimeFilter] = useState('全部');
 
-  const filtered = (entries ?? []).filter((entry) => {
+  const filtered = history.filter((entry) => {
     if (scenarioFilter !== '全部' && entry.scenario !== scenarioFilter) return false;
     return true;
   });
@@ -95,15 +92,7 @@ export default function History() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <tr key={i} className="border-b border-gray-50">
-                  <td colSpan={7} className="px-5 py-4">
-                    <LoadingPlaceholder type="text" lines={1} />
-                  </td>
-                </tr>
-              ))
-            ) : filtered.length === 0 ? (
+            {filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-5 py-12 text-center text-muted text-sm">
                   暂无练习记录。

@@ -1,20 +1,23 @@
 import { create } from 'zustand';
 import type { Scenario, ChatMessage, FeedbackData, RadarData } from '../types';
 import {
-  scenarios as mockScenarios,
   conversation as mockConversation,
   feedback as mockFeedback,
   radarData as mockRadarData,
   getConversationByScenario,
 } from '../mock/mock_data';
+import { fetchScenarios } from '../api/scenarios';
 
 interface AppState {
   // Scenarios
   scenarios: Scenario[];
+  scenariosLoading: boolean;
+  scenariosError: string | null;
+  loadScenarios: () => Promise<void>;
   selectedScenarioId: number | null;
   selectScenario: (id: number) => void;
 
-  // Practice session
+  // Practice session (still mock for now, will be replaced in Section 4)
   conversation: ChatMessage[];
   isSessionActive: boolean;
   feedback: FeedbackData;
@@ -25,13 +28,25 @@ interface AppState {
   endSession: () => void;
   addMessage: (msg: ChatMessage) => void;
 
-  // Simulated loading for placeholder animations
+  // UI
   loading: boolean;
   setLoading: (v: boolean) => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
-  scenarios: mockScenarios,
+  scenarios: [],
+  scenariosLoading: false,
+  scenariosError: null,
+  loadScenarios: async () => {
+    set({ scenariosLoading: true, scenariosError: null });
+    try {
+      const data = await fetchScenarios();
+      set({ scenarios: data, scenariosLoading: false });
+    } catch (e) {
+      set({ scenariosError: String(e), scenariosLoading: false });
+    }
+  },
+
   selectedScenarioId: null,
   selectScenario: (id) => set({ selectedScenarioId: id }),
 

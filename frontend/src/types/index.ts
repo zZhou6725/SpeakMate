@@ -35,6 +35,8 @@ export interface HistoryEntry {
   scenario: string;
   score: number;
   duration: string;
+  grammar: number;
+  pronunciation: number;
 }
 
 export interface HistoryFiltersType {

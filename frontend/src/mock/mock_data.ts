@@ -55,14 +55,14 @@ export const radarData: RadarData = {
 
 // ─── History ────────────────────────────────────────────
 export const history: HistoryEntry[] = [
-  { id: 1, date: '2026-06-05', scenario: '面试', score: 85, duration: '11分钟' },
-  { id: 2, date: '2026-06-04', scenario: '餐厅', score: 78, duration: '8分钟' },
-  { id: 3, date: '2026-06-03', scenario: '会议', score: 91, duration: '15分钟' },
-  { id: 4, date: '2026-06-02', scenario: '旅行', score: 82, duration: '10分钟' },
-  { id: 5, date: '2026-06-01', scenario: '面试', score: 88, duration: '12分钟' },
-  { id: 6, date: '2026-05-30', scenario: '餐厅', score: 75, duration: '9分钟' },
-  { id: 7, date: '2026-05-29', scenario: '会议', score: 86, duration: '14分钟' },
-  { id: 8, date: '2026-05-28', scenario: '旅行', score: 90, duration: '13分钟' },
+  { id: 1, date: '2026-06-05', scenario: '面试', score: 85, duration: '11分钟', grammar: 82, pronunciation: 87 },
+  { id: 2, date: '2026-06-04', scenario: '餐厅', score: 78, duration: '8分钟', grammar: 75, pronunciation: 80 },
+  { id: 3, date: '2026-06-03', scenario: '会议', score: 91, duration: '15分钟', grammar: 90, pronunciation: 92 },
+  { id: 4, date: '2026-06-02', scenario: '旅行', score: 82, duration: '10分钟', grammar: 80, pronunciation: 83 },
+  { id: 5, date: '2026-06-01', scenario: '面试', score: 88, duration: '12分钟', grammar: 86, pronunciation: 89 },
+  { id: 6, date: '2026-05-30', scenario: '餐厅', score: 75, duration: '9分钟', grammar: 72, pronunciation: 78 },
+  { id: 7, date: '2026-05-29', scenario: '会议', score: 86, duration: '14分钟', grammar: 85, pronunciation: 88 },
+  { id: 8, date: '2026-05-28', scenario: '旅行', score: 90, duration: '13分钟', grammar: 89, pronunciation: 91 },
 ];
 
 // ─── History Filters ────────────────────────────────────

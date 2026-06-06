@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Simulates async data loading with a delay.
@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 export function useMockData<T>(fetcher: () => T, delay = 400) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
 
   useEffect(() => {
     let cancelled = false;
@@ -15,7 +17,7 @@ export function useMockData<T>(fetcher: () => T, delay = 400) {
 
     const timer = setTimeout(() => {
       if (!cancelled) {
-        setData(fetcher());
+        setData(fetcherRef.current());
         setLoading(false);
       }
     }, delay);
@@ -24,7 +26,7 @@ export function useMockData<T>(fetcher: () => T, delay = 400) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [fetcher, delay]);
+  }, [delay]);
 
   return { data, loading };
 }

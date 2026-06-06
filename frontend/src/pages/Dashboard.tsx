@@ -1,16 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { useMockData } from '../hooks/useMockData';
 import { dashboardStats } from '../mock/mock_data';
 import ScenarioCard from '../components/ScenarioCard';
-import ScoreRing from '../components/ScoreRing';
-import LoadingPlaceholder from '../components/LoadingPlaceholder';
-import type { DashboardStats } from '../types';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { scenarios, selectedScenarioId, selectScenario, startSession } = useStore();
-  const { data, loading } = useMockData<DashboardStats>(() => dashboardStats, 400);
 
   const handleStart = () => {
     if (!selectedScenarioId) return;
@@ -19,58 +14,42 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text">欢迎回来</h1>
-        <p className="text-muted mt-1">准备好练习英语了吗？</p>
+      <div className="mb-8 text-center">
+        <p className="text-sm font-medium text-primary tracking-wide uppercase">Welcome Back</p>
+        <h1 className="text-2xl font-bold text-text mt-1">欢迎回来</h1>
+        <p className="text-muted text-sm mt-2">Ready to practice English today?</p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        {loading
-          ? Array.from({ length: 3 }).map((_, i) => (
-              <LoadingPlaceholder key={i} type="card" />
-            ))
-          : data && (
-              <>
-                <StatCard label="练习总次数" value={data.totalPractice} />
-                <StatCard label="平均得分" value={data.averageScore} />
-                <StatCard label="最高得分" value={data.bestScore} suffix="分" />
-              </>
-            )}
+      {/* Stats Cards — shield icons */}
+      <div className="grid grid-cols-3 gap-5 mb-10 max-w-2xl mx-auto w-full">
+        <StatCard label="总练习场次" value={dashboardStats.totalPractice} />
+        <StatCard label="平均得分" value={dashboardStats.averageScore} />
+        <StatCard label="历史最高分" value={dashboardStats.bestScore} />
       </div>
-
-      {/* Score Ring Preview */}
-      {!loading && data && (
-        <div className="flex justify-center mb-8">
-          <ScoreRing value={data.averageScore} label="综合" size={100} />
-        </div>
-      )}
 
       {/* Scenario Selection */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-text mb-4">选择场景</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {scenarios.map((s) => (
-            <ScenarioCard
-              key={s.id}
-              scenario={s}
-              selected={s.id === selectedScenarioId}
-              onSelect={selectScenario}
-            />
-          ))}
-        </div>
+      <h2 className="text-lg font-semibold text-text mb-4 text-center">选择场景</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto w-full mb-10">
+        {scenarios.map((s) => (
+          <ScenarioCard
+            key={s.id}
+            scenario={s}
+            selected={s.id === selectedScenarioId}
+            onSelect={selectScenario}
+          />
+        ))}
       </div>
 
-      {/* Start Button */}
+      {/* Start Button — bottom center, wider rounded */}
       <div className="flex justify-center">
         <button
           onClick={handleStart}
           disabled={!selectedScenarioId}
-          className={`px-10 py-3 rounded-card text-white font-semibold text-base transition-all duration-200 ${
+          className={`px-20 py-4 rounded-2xl text-white font-semibold text-lg transition-all duration-200 min-w-[280px] ${
             selectedScenarioId
-              ? 'bg-primary hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-[0.98]'
+              ? 'bg-primary hover:bg-blue-700 shadow-lg hover:shadow-xl active:scale-[0.98]'
               : 'bg-gray-300 cursor-not-allowed'
           }`}
         >
@@ -81,14 +60,16 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, suffix }: { label: string; value: number; suffix?: string }) {
+function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-white rounded-card p-5 shadow-sm border border-gray-100 text-center">
-      <p className="text-xs text-muted font-medium uppercase tracking-wide mb-2">{label}</p>
-      <p className="text-3xl font-bold text-text">
-        {value}
-        {suffix && <span className="text-lg text-muted">{suffix}</span>}
-      </p>
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow">
+      <div className="flex justify-center mb-3">
+        <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+        </svg>
+      </div>
+      <p className="text-2xl font-bold text-text">{value}</p>
+      <p className="text-xs text-muted font-medium mt-1">{label}</p>
     </div>
   );
 }

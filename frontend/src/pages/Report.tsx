@@ -1,11 +1,9 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useMockData } from '../hooks/useMockData';
 import { getSessionById, practiceSessions } from '../mock/mock_data';
 import ScoreRing from '../components/ScoreRing';
 import RadarChart from '../components/RadarChart';
 import FeedbackPanel from '../components/FeedbackPanel';
 import ChatBubble from '../components/ChatBubble';
-import LoadingPlaceholder from '../components/LoadingPlaceholder';
 import type { PracticeSession } from '../types';
 
 export default function Report() {
@@ -13,31 +11,11 @@ export default function Report() {
   const [searchParams] = useSearchParams();
   const sessionId = parseInt(searchParams.get('id') ?? '1', 10);
 
-  const { data: session, loading } = useMockData<PracticeSession | undefined>(
-    () => getSessionById(sessionId) ?? practiceSessions[0],
-    500,
-  );
+  const session = getSessionById(sessionId) ?? practiceSessions[0];
 
   const handleExport = () => {
     // Placeholder: future export functionality
   };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-text">练习报告</h1>
-            <p className="text-muted mt-1">正在加载报告...</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <LoadingPlaceholder type="chart" />
-          <LoadingPlaceholder type="card" />
-        </div>
-      </div>
-    );
-  }
 
   if (!session) {
     return (

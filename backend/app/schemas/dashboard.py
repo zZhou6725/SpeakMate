@@ -8,5 +8,4 @@ class DashboardStatsOut(BaseModel):
     averageScore: float
     bestScore: float
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

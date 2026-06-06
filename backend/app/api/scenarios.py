@@ -1,7 +1,5 @@
 """Scenario API - returns the list of available practice scenarios."""
 
-from typing import List
-
 from fastapi import APIRouter
 
 from ..schemas.scenario import ScenarioOut
@@ -16,7 +14,7 @@ SEED_SCENARIOS = [
 ]
 
 
-@router.get("", response_model=List[ScenarioOut])
+@router.get("", response_model=list[ScenarioOut])
 async def list_scenarios():
     """Return all available practice scenarios."""
     return SEED_SCENARIOS

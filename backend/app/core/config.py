@@ -1,29 +1,24 @@
 """Application configuration loaded from .env / environment variables."""
 
-import os
-from typing import List
-
-from dotenv import load_dotenv
-
-load_dotenv()
+from pydantic_settings import BaseSettings
 
 
-class Settings:
+class Settings(BaseSettings):
     # LLM
-    llm_api_key: str = os.getenv("LLM_API_KEY", "your-api-key-here")
+    llm_api_key: str = "your-api-key-here"
 
     # Database
-    db_path: str = os.getenv("DB_PATH", "./data/speakmate.db")
+    db_path: str = "./data/speakmate.db"
 
     # Whisper
-    whisper_model: str = os.getenv("WHISPER_MODEL", "base")
+    whisper_model: str = "base"
 
     # Server
-    host: str = os.getenv("HOST", "0.0.0.0")
-    port: int = int(os.getenv("PORT", "8000"))
+    host: str = "0.0.0.0"
+    port: int = 8000
 
     # CORS
-    cors_origins: List[str] = [
+    cors_origins: list[str] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
@@ -33,6 +28,8 @@ class Settings:
     @property
     def database_url(self) -> str:
         return f"sqlite+aiosqlite:///{self.db_path}"
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

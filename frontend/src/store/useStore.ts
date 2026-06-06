@@ -7,16 +7,12 @@ import type {
   DashboardStats,
   HistoryEntry,
   HistoryFiltersType,
+  PracticeSession,
 } from '../types';
-import {
-  conversation as mockConversation,
-  feedback as mockFeedback,
-  radarData as mockRadarData,
-  getConversationByScenario,
-} from '../mock/mock_data';
 import { fetchScenarios } from '../api/scenarios';
 import { fetchDashboardStats } from '../api/dashboard';
 import { fetchHistory, fetchHistoryFilters } from '../api/history';
+import { createSession, sendMessage, endSession } from '../api/sessions';
 
 interface AppState {
   // Scenarios
@@ -41,15 +37,18 @@ interface AppState {
   loadHistory: (params?: { scenario?: string; timeRange?: string }) => Promise<void>;
   loadHistoryFilters: () => Promise<void>;
 
-  // Practice session (still mock for now, will be replaced in Section 4)
+  // Practice session
   conversation: ChatMessage[];
   isSessionActive: boolean;
   feedback: FeedbackData;
   radarData: RadarData;
   sessionScore: number;
+  currentSessionId: number | null;
+  lastReport: PracticeSession | null;
 
-  startSession: () => void;
-  endSession: () => void;
+  startSession: () => Promise<void>;
+  sendMessageAction: (text: string) => Promise<void>;
+  endSessionAction: () => Promise<void>;
   addMessage: (msg: ChatMessage) => void;
 
   // UI
@@ -114,23 +113,45 @@ export const useStore = create<AppState>((set, get) => ({
   feedback: { grammar: 0, pronunciation: 0, fluency: 0 },
   radarData: { pronunciation: 0, grammar: 0, vocabulary: 0, fluency: 0, confidence: 0 },
   sessionScore: 0,
+  currentSessionId: null,
+  lastReport: null,
 
-  startSession: () => {
+  startSession: async () => {
     const { selectedScenarioId } = get();
-    const msgs = selectedScenarioId
-      ? getConversationByScenario(selectedScenarioId)
-      : mockConversation;
+    if (!selectedScenarioId) return;
+    const session = await createSession(selectedScenarioId);
     set({
       isSessionActive: true,
-      conversation: msgs,
-      feedback: mockFeedback,
-      radarData: mockRadarData,
-      sessionScore: 85,
+      currentSessionId: session.id,
+      conversation: session.conversation,
+      feedback: session.feedback,
+      radarData: session.radarData,
+      sessionScore: session.score,
     });
   },
 
-  endSession: () => {
-    set({ isSessionActive: false });
+  sendMessageAction: async (text: string) => {
+    const { currentSessionId, conversation } = get();
+    if (!currentSessionId) return;
+    const result = await sendMessage(currentSessionId, text);
+    set({
+      conversation: [...conversation, result.userMessage, result.aiMessage],
+      feedback: result.feedback,
+    });
+  },
+
+  endSessionAction: async () => {
+    const { currentSessionId } = get();
+    if (!currentSessionId) return;
+    const report = await endSession(currentSessionId);
+    set({
+      isSessionActive: false,
+      lastReport: report,
+      conversation: report.conversation,
+      feedback: report.feedback,
+      radarData: report.radarData,
+      sessionScore: report.score,
+    });
   },
 
   addMessage: (msg) => {

@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { dashboardStats } from '../mock/mock_data';
 import ScenarioCard from '../components/ScenarioCard';
 
 export default function Dashboard() {
@@ -11,19 +10,29 @@ export default function Dashboard() {
     scenariosLoading,
     scenariosError,
     loadScenarios,
+    dashboardStats,
+    dashboardLoading,
+    loadDashboardStats,
     selectedScenarioId,
     selectScenario,
     startSession,
   } = useStore();
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     loadScenarios();
-  }, [loadScenarios]);
+    loadDashboardStats();
+  }, [loadScenarios, loadDashboardStats]);
 
-  const handleStart = () => {
-    if (!selectedScenarioId) return;
-    startSession();
-    navigate('/practice');
+  const handleStart = async () => {
+    if (!selectedScenarioId || starting) return;
+    setStarting(true);
+    try {
+      await startSession();
+      navigate('/practice');
+    } catch {
+      setStarting(false);
+    }
   };
 
   return (
@@ -35,11 +44,21 @@ export default function Dashboard() {
         <p className="text-muted text-sm mt-2">Ready to practice English today?</p>
       </div>
 
-      {/* Stats Cards — shield icons */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-5 mb-10 max-w-2xl mx-auto w-full">
-        <StatCard label="总练习场次" value={dashboardStats.totalPractice} />
-        <StatCard label="平均得分" value={dashboardStats.averageScore} />
-        <StatCard label="历史最高分" value={dashboardStats.bestScore} />
+        {dashboardLoading ? (
+          <>
+            <StatCard label="总练习场次" value={0} />
+            <StatCard label="平均得分" value={0} />
+            <StatCard label="历史最高分" value={0} />
+          </>
+        ) : (
+          <>
+            <StatCard label="总练习场次" value={dashboardStats.totalPractice} />
+            <StatCard label="平均得分" value={dashboardStats.averageScore} />
+            <StatCard label="历史最高分" value={dashboardStats.bestScore} />
+          </>
+        )}
       </div>
 
       {/* Scenario Selection */}
@@ -65,18 +84,18 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Start Button — bottom center, wider rounded */}
+      {/* Start Button */}
       <div className="flex justify-center">
         <button
           onClick={handleStart}
-          disabled={!selectedScenarioId}
+          disabled={!selectedScenarioId || starting}
           className={`px-20 py-4 rounded-2xl text-white font-semibold text-lg transition-all duration-200 min-w-[280px] ${
-            selectedScenarioId
+            selectedScenarioId && !starting
               ? 'bg-primary hover:bg-blue-700 shadow-lg hover:shadow-xl active:scale-[0.98]'
               : 'bg-gray-300 cursor-not-allowed'
           }`}
         >
-          开始练习
+          {starting ? '正在创建会话...' : '开始练习'}
         </button>
       </div>
     </div>

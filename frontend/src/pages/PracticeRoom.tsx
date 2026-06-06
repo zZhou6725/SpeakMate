@@ -14,19 +14,37 @@ const roleMap: Record<string, string> = {
 
 export default function PracticeRoom() {
   const navigate = useNavigate();
-  const { conversation, feedback, scenarios, selectedScenarioId } = useStore();
+  const {
+    conversation,
+    feedback,
+    scenarios,
+    selectedScenarioId,
+    currentSessionId,
+    sendMessageAction,
+    endSessionAction,
+  } = useStore();
   const [textInput, setTextInput] = useState('');
+  const [sending, setSending] = useState(false);
 
   const selected = scenarios.find((sc) => sc.id === selectedScenarioId);
   const role = selected ? (roleMap[selected.name] ?? '—') : '—';
 
-  const handleEndSession = () => {
-    navigate('/report');
+  const handleEndSession = async () => {
+    await endSessionAction();
+    navigate(`/report?id=${currentSessionId}`);
   };
 
-  const handleSend = () => {
-    if (!textInput.trim()) return;
+  const handleSend = async () => {
+    if (!textInput.trim() || sending) return;
+    const msg = textInput;
     setTextInput('');
+    setSending(true);
+    try {
+      await sendMessageAction(msg);
+    } catch {
+      // ignore — feedback still updates via store
+    }
+    setSending(false);
   };
 
   return (
@@ -85,7 +103,8 @@ export default function PracticeRoom() {
               onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="在这里输入你的回答..."
-              className="w-full px-4 py-3 rounded-card border border-gray-200 text-sm text-text placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              disabled={sending}
+              className="w-full px-4 py-3 rounded-card border border-gray-200 text-sm text-text placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:bg-gray-50"
             />
           </div>
         </div>

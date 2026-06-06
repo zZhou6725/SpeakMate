@@ -1,20 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { history, historyFilters } from '../mock/mock_data';
 import type { HistoryEntry } from '../types';
 
 export default function History() {
   const navigate = useNavigate();
-  const { selectScenario, startSession } = useStore();
+  const {
+    selectScenario,
+    startSession,
+    history,
+    historyFilters,
+    historyLoading,
+    loadHistory,
+    loadHistoryFilters,
+  } = useStore();
 
   const [scenarioFilter, setScenarioFilter] = useState('全部');
   const [timeFilter, setTimeFilter] = useState('全部');
 
-  const filtered = history.filter((entry) => {
-    if (scenarioFilter !== '全部' && entry.scenario !== scenarioFilter) return false;
-    return true;
-  });
+  useEffect(() => {
+    loadHistoryFilters();
+    loadHistory();
+  }, [loadHistoryFilters, loadHistory]);
+
+  const handleFilterScenario = (s: string) => {
+    setScenarioFilter(s);
+    loadHistory({
+      scenario: s !== '全部' ? s : undefined,
+      timeRange: timeFilter !== '全部' ? timeFilter : undefined,
+    });
+  };
+
+  const handleFilterTime = (t: string) => {
+    setTimeFilter(t);
+    loadHistory({
+      scenario: scenarioFilter !== '全部' ? scenarioFilter : undefined,
+      timeRange: t !== '全部' ? t : undefined,
+    });
+  };
 
   const handleViewReport = (id: number) => {
     navigate(`/report?id=${id}`);
@@ -45,7 +68,7 @@ export default function History() {
             {historyFilters.scenarios.map((s) => (
               <button
                 key={s}
-                onClick={() => setScenarioFilter(s)}
+                onClick={() => handleFilterScenario(s)}
                 className={`px-3 py-1.5 rounded-card text-xs font-medium transition-colors ${
                   scenarioFilter === s
                     ? 'bg-primary text-white'
@@ -63,7 +86,7 @@ export default function History() {
             {historyFilters.timeRanges.map((t) => (
               <button
                 key={t}
-                onClick={() => setTimeFilter(t)}
+                onClick={() => handleFilterTime(t)}
                 className={`px-3 py-1.5 rounded-card text-xs font-medium transition-colors ${
                   timeFilter === t
                     ? 'bg-primary text-white'
@@ -92,14 +115,20 @@ export default function History() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {historyLoading ? (
+              <tr>
+                <td colSpan={7} className="px-5 py-12 text-center text-muted text-sm">
+                  加载中...
+                </td>
+              </tr>
+            ) : history.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-5 py-12 text-center text-muted text-sm">
                   暂无练习记录。
                 </td>
               </tr>
             ) : (
-              filtered.map((entry) => (
+              history.map((entry) => (
                 <tr
                   key={entry.id}
                   className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"

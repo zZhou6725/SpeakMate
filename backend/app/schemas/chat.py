@@ -3,6 +3,7 @@
 from pydantic import BaseModel
 
 from .correction import CorrectionOut
+from .pronunciation import PronunciationOut
 
 
 class ChatMessageOut(BaseModel):
@@ -56,5 +57,6 @@ class MessageOut(BaseModel):
     aiMessage: ChatMessageOut
     feedback: FeedbackOut
     correction: CorrectionOut | None = None
+    pronunciation: PronunciationOut | None = None
 
     model_config = {"from_attributes": True}

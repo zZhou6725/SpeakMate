@@ -1,4 +1,4 @@
-import type { PracticeSession, ChatMessage, FeedbackData, GrammarCorrection } from '../types';
+import type { PracticeSession, ChatMessage, FeedbackData, GrammarCorrection, PronunciationResult } from '../types';
 import { post } from './client';
 
 interface MessageOut {
@@ -6,6 +6,7 @@ interface MessageOut {
   aiMessage: ChatMessage;
   feedback: FeedbackData;
   correction?: GrammarCorrection | null;
+  pronunciation?: PronunciationResult | null;
 }
 
 export function createSession(scenarioId: number): Promise<PracticeSession> {

@@ -41,11 +41,28 @@ SCENARIO_NAMES: dict[int, str] = {
 }
 
 # Scenario id → opening AI greeting (fixed — not LLM-generated)
-OPENING_LINES: dict[int, str] = {
-    1: "Hi there, welcome! Tell me a little about yourself.",
-    2: "Hey, welcome to The Garden Bistro! What can I get for you today?",
-    3: "Hey, good to see you. Let's catch up on the Q3 project timeline.",
-    4: "Hi there! Where are you planning to travel to?",
+# Scenario id → opening AI greeting per difficulty
+OPENING_LINES: dict[int, dict[str, str]] = {
+    1: {  # 面试
+        "简单": "Hi! Nice to meet you. Can you tell me your name and where you are from?",
+        "中等": "Hi there, welcome! Tell me a little about yourself and your background.",
+        "困难": "Good morning! Let's dive right in — walk me through your professional background and what makes you a strong candidate for this role.",
+    },
+    2: {  # 餐厅
+        "简单": "Hello! Welcome. What would you like to eat today?",
+        "中等": "Hey, welcome to The Garden Bistro! What can I get for you today?",
+        "困难": "Good evening and welcome to The Garden Bistro. Our specials tonight are pan-seared salmon with herb butter and a dry-aged ribeye. May I start you off with a drink while you look over the menu?",
+    },
+    3: {  # 会议
+        "简单": "Hi! Let's talk about the project. How is your work going?",
+        "中等": "Hey, good to see you. Let's catch up on the Q3 project timeline — how are things progressing?",
+        "困难": "Alright team, let's get straight into it. I'd like to go over the Q3 deliverables, identify any blockers, and reassess our resource allocation. Can you kick us off with a status update on your side?",
+    },
+    4: {  # 旅行
+        "简单": "Hello! Where do you want to go on your trip?",
+        "中等": "Hi there! Where are you planning to travel to? Any particular destination in mind?",
+        "困难": "Welcome to Wanderlust Travel! Whether you're after a luxury beach getaway, a cultural deep-dive, or an off-the-beaten-path adventure, I'm here to craft the perfect itinerary. So tell me — what kind of experience are you looking for?",
+    },
 }
 
 
@@ -136,7 +153,8 @@ async def create_session(
     db.add(session)
     await db.flush()
 
-    opening = OPENING_LINES.get(body.scenarioId, "你好！")
+    scenario_lines = OPENING_LINES.get(body.scenarioId, {})
+    opening = scenario_lines.get(body.difficulty) or list(scenario_lines.values())[0] if scenario_lines else "Hi there!"
     ai_msg = Dialogue(
         session_id=session.id,
         ai_text=opening,

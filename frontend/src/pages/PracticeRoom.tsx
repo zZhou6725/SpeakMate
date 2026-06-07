@@ -13,6 +13,12 @@ const roleMap: Record<string, string> = {
   旅行: 'Guide',
 };
 
+const diffConfig: Record<string, { bg: string; text: string; label: string }> = {
+  简单: { bg: 'bg-green-100 border-green-200', text: 'text-green-700', label: 'Easy' },
+  中等: { bg: 'bg-amber-100 border-amber-200', text: 'text-amber-700', label: 'Medium' },
+  困难: { bg: 'bg-red-100 border-red-200', text: 'text-red-700', label: 'Hard' },
+};
+
 export default function PracticeRoom() {
   const navigate = useNavigate();
   const {
@@ -47,6 +53,7 @@ export default function PracticeRoom() {
 
   const selected = scenarios.find((sc) => sc.id === selectedScenarioId);
   const role = selected ? (roleMap[selected.name] ?? '—') : '—';
+  const diffStyle = diffConfig[selectedDifficulty] ?? diffConfig['中等'];
 
   const handleEndSession = async () => {
     await endSessionAction();
@@ -76,9 +83,12 @@ export default function PracticeRoom() {
           </svg>
         </div>
         <h2 className="text-lg font-bold text-text mb-0.5">{selected?.name ?? '—'}</h2>
-        <p className="text-xs text-muted mb-4">
-          <span className="font-semibold text-primary">{role}</span> · {selectedDifficulty}
+        <p className="text-xs text-muted mb-2">
+          <span className="font-semibold text-primary">{role}</span>
         </p>
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border mb-4 ${diffStyle.bg} ${diffStyle.text}`}>
+          {diffStyle.label} · {selectedDifficulty}
+        </span>
         <div className="w-full space-y-2 mt-auto">
           <button className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
             暂停会话

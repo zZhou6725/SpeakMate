@@ -27,6 +27,7 @@ from ..schemas.chat import (
 from ..agents.conversation_agent import generate_ai_reply, generate_ai_reply_stream
 from ..agents.correction_agent import check_grammar
 from ..agents.pronunciation_agent import check_pronunciation
+from ..agents.summary_agent import generate_summary
 from ..schemas.correction import CorrectionOut
 from ..schemas.pronunciation import PronunciationOut
 
@@ -325,6 +326,22 @@ async def end_session(
     user_texts = [d.user_text for d in all_dialogues if d.user_text]
     vocabulary = _compute_vocabulary(user_texts, all_items)
 
+    # Generate session summary
+    summary_dict = await generate_summary(
+        scenario=session.scenario,
+        difficulty=session.difficulty,
+        grammar_score=radar.grammar,
+        pronunciation_score=radar.pronunciation,
+        overall_score=avg_score,
+        total_words=vocabulary.totalWords,
+        unique_words=vocabulary.uniqueWords,
+        accuracy=vocabulary.accuracy,
+        num_rounds=session.total_rounds,
+        grammar_errors=len(all_items),
+    )
+    from ..schemas.chat import SummaryOut
+    summary_out = SummaryOut(**summary_dict) if summary_dict else None
+
     # Aggregate pronunciation items from all dialogues
     pron_items: list[dict] = []
     for d in all_dialogues:
@@ -357,6 +374,7 @@ async def end_session(
         vocabulary=vocabulary,
         correction=correction_out,
         pronunciation=pronunciation_out,
+        summary=summary_out,
         score=avg_score,
         duration=_fmt_duration(session.start_time, session.end_time),
     )

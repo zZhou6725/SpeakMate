@@ -18,8 +18,10 @@ from ..schemas.chat import (
     SessionOut,
     VocabularyOut,
 )
+from ..schemas.chat import SummaryOut
 from ..schemas.correction import CorrectionOut
 from ..schemas.pronunciation import PronunciationOut
+from ..agents.summary_agent import generate_summary
 from ..services.report_exporter import ReportData, build_pdf, build_pdf_preview_page
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -118,6 +120,21 @@ async def get_report(
     accuracy = round((total - matched) / total * 100) if total else 100
     vocabulary = VocabularyOut(totalWords=total, uniqueWords=unique, avgWordLength=avg_len, accuracy=accuracy)
 
+    # Generate summary
+    summary_dict = await generate_summary(
+        scenario=data.scenario,
+        difficulty=data.difficulty,
+        grammar_score=data.grammar_score,
+        pronunciation_score=data.pronunciation_score,
+        overall_score=data.score,
+        total_words=total,
+        unique_words=unique,
+        accuracy=accuracy,
+        num_rounds=len(data.conversation),
+        grammar_errors=len(data.grammar_items),
+    )
+    summary_out = SummaryOut(**summary_dict) if summary_dict else None
+
     scenario_id = SCENARIO_NAMES.get(data.scenario, 1)
 
     return SessionOut(
@@ -131,6 +148,7 @@ async def get_report(
         vocabulary=vocabulary,
         correction=correction_out,
         pronunciation=pronunciation_out,
+        summary=summary_out,
         score=data.score,
         duration=data.duration,
     )

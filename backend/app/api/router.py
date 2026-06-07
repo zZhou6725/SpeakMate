@@ -1,3 +1,4 @@
+
 """Aggregate all sub-routers."""
 
 from fastapi import APIRouter

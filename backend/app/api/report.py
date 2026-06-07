@@ -1,7 +1,5 @@
 """Report API — view and export practice session reports."""
 
-import random
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,17 +68,22 @@ async def get_report(
     eval_record = result.scalar()
 
     if eval_record and eval_record.grammar_score and eval_record.pronunciation_score:
+        gs = int(eval_record.grammar_score)
+        ps = int(eval_record.pronunciation_score)
+        fl = max(45, int((gs + ps) / 2) - 2)
+        vo = max(45, gs - 5)
+        co = max(45, int((gs + ps + fl) / 3))
         radar = RadarDataOut(
-            pronunciation=int(eval_record.pronunciation_score),
-            grammar=int(eval_record.grammar_score),
-            vocabulary=random.randint(75, 95),
-            fluency=random.randint(75, 95),
-            confidence=random.randint(75, 95),
+            pronunciation=ps,
+            grammar=gs,
+            vocabulary=vo,
+            fluency=fl,
+            confidence=co,
         )
         feedback = FeedbackOut(
-            grammar=int(eval_record.grammar_score),
-            pronunciation=int(eval_record.pronunciation_score),
-            fluency=radar.fluency + random.randint(-2, 2),
+            grammar=gs,
+            pronunciation=ps,
+            fluency=fl,
         )
     else:
         radar = RadarDataOut(

@@ -19,6 +19,7 @@ export default function PracticeRoom() {
     feedback,
     correction,
     pronunciation,
+    vocabulary,
     scenarios,
     selectedScenarioId,
     currentSessionId,
@@ -120,7 +121,7 @@ export default function PracticeRoom() {
 
       {/* ────── Right Panel: Real-time Feedback ────── */}
       <aside className="min-h-0 overflow-y-auto">
-        <FeedbackPanel data={feedback} correction={correction} pronunciation={pronunciation} />
+        <FeedbackPanel data={feedback} correction={correction} pronunciation={pronunciation} vocabulary={vocabulary} />
       </aside>
     </div>
   );

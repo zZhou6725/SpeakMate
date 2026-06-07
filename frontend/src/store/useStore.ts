@@ -10,6 +10,7 @@ import type {
   PracticeSession,
   GrammarCorrection,
   PronunciationResult,
+  VocabularyStats,
 } from '../types';
 import { fetchScenarios } from '../api/scenarios';
 import { fetchDashboardStats } from '../api/dashboard';
@@ -49,6 +50,7 @@ interface AppState {
   lastReport: PracticeSession | null;
   correction: GrammarCorrection | null;
   pronunciation: PronunciationResult | null;
+  vocabulary: VocabularyStats | null;
 
   startSession: () => Promise<void>;
   sendMessageAction: (text: string) => Promise<void>;
@@ -121,6 +123,7 @@ export const useStore = create<AppState>((set, get) => ({
   lastReport: null,
   correction: null,
   pronunciation: null,
+  vocabulary: null,
 
   startSession: async () => {
     const { selectedScenarioId } = get();
@@ -133,6 +136,7 @@ export const useStore = create<AppState>((set, get) => ({
       feedback: session.feedback,
       radarData: session.radarData,
       sessionScore: session.score,
+      vocabulary: session.vocabulary ?? null,
     });
   },
 
@@ -169,6 +173,7 @@ export const useStore = create<AppState>((set, get) => ({
               feedback: result.feedback,
               correction: result.correction ?? null,
               pronunciation: result.pronunciation ?? null,
+              vocabulary: (result as any).vocabulary ?? null,
             };
           });
         },
@@ -188,6 +193,7 @@ export const useStore = create<AppState>((set, get) => ({
       conversation: report.conversation,
       feedback: report.feedback,
       radarData: report.radarData,
+      vocabulary: report.vocabulary ?? null,
       sessionScore: report.score,
     });
   },

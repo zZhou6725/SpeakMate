@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,6 +22,7 @@ from ..schemas.chat import (
     SessionOut,
     MessageIn,
     MessageOut,
+    VocabularyOut,
 )
 from ..agents.conversation_agent import generate_ai_reply, generate_ai_reply_stream
 from ..agents.correction_agent import check_grammar
@@ -83,6 +85,27 @@ def _compute_scores(
         confidence=confidence,
     )
     return feedback, radar
+
+
+def _compute_vocabulary(user_texts: list[str], all_items: list[dict]) -> VocabularyOut:
+    """Compute vocabulary stats from user messages and grammar correction items."""
+    all_words: list[str] = []
+    for text in user_texts:
+        words = re.findall(r"[a-zA-Z]+", text.lower())
+        all_words.extend(words)
+
+    total = len(all_words)
+    unique = len(set(all_words))
+    avg_len = round(sum(len(w) for w in all_words) / total, 1) if total else 0.0
+
+    wrong_words: set[str] = set()
+    for item in all_items:
+        wrong = item.get("wrong", "").lower()
+        wrong_words.update(re.findall(r"[a-zA-Z]+", wrong))
+    matched_wrong = len(wrong_words & set(all_words))
+    accuracy = round((total - matched_wrong) / total * 100) if total else 100
+
+    return VocabularyOut(totalWords=total, uniqueWords=unique, avgWordLength=avg_len, accuracy=accuracy)
 
 
 def _fmt_duration(start: datetime, end: datetime | None) -> str:
@@ -197,6 +220,16 @@ async def send_message(
         correction_out = CorrectionOut(**correction_dict) if correction_dict else None
         pronunciation_out = PronunciationOut(**pronunciation_dict) if pronunciation_dict else None
 
+        # Compute vocabulary stats across all user messages in this session
+        user_texts = [d.user_text for d in all_dialogues if d.user_text] + [body.message]
+        all_corr_items: list[dict] = []
+        for d in all_dialogues:
+            if d.grammar_correction and d.grammar_correction.get("items"):
+                all_corr_items.extend(d.grammar_correction["items"])
+        if correction_dict and correction_dict.get("items"):
+            all_corr_items.extend(correction_dict["items"])
+        vocabulary = _compute_vocabulary(user_texts, all_corr_items)
+
         done_payload = {
             "type": "done",
             "userMessage": {"role": "user", "message": body.message},
@@ -206,6 +239,7 @@ async def send_message(
                 "pronunciation": feedback.pronunciation,
                 "fluency": feedback.fluency,
             },
+            "vocabulary": vocabulary.model_dump(),
             "correction": correction_out.model_dump() if correction_out else None,
             "pronunciation": pronunciation_out.model_dump() if pronunciation_out else None,
         }
@@ -269,6 +303,9 @@ async def end_session(
 
     scenario_id = _scenario_name_to_id(session.scenario)
 
+    user_texts = [d.user_text for d in all_dialogues if d.user_text]
+    vocabulary = _compute_vocabulary(user_texts, all_items)
+
     return SessionOut(
         id=session.id,
         scenarioId=scenario_id,
@@ -280,6 +317,7 @@ async def end_session(
             fluency=radar.fluency,
         ),
         radarData=radar,
+        vocabulary=vocabulary,
         score=avg_score,
         duration=_fmt_duration(session.start_time, session.end_time),
     )

@@ -8,7 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.router import register_routers
 from .core.config import settings
 from .core.database import engine
+from .core.logging_config import setup_logging
 from .models.base import Base
+
+# Initialize logging before anything else
+setup_logging()
 
 
 @asynccontextmanager

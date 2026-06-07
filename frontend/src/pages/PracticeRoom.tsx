@@ -33,18 +33,16 @@ export default function PracticeRoom() {
   const [sending, setSending] = useState(false);
   const [speechOn, setSpeechOn] = useState(true);
   const { speak, stop, toggle } = useSpeech();
-  const prevConvLen = useRef(conversation.length);
+  const lastAIText = useRef('');
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    // Auto-speak new AI messages
-    if (conversation.length > prevConvLen.current) {
-      const latest = conversation[conversation.length - 1];
-      if (latest.role === 'ai') {
-        speak(latest.message);
-      }
+    // Speak new AI messages when content stabilizes (non-empty)
+    const latest = conversation[conversation.length - 1];
+    if (latest?.role === 'ai' && latest.message && latest.message !== lastAIText.current) {
+      lastAIText.current = latest.message;
+      speak(latest.message);
     }
-    prevConvLen.current = conversation.length;
   }, [conversation, speak]);
 
   const selected = scenarios.find((sc) => sc.id === selectedScenarioId);

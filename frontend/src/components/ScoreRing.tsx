@@ -10,9 +10,18 @@ export default function ScoreRing({ value, label, size = 80 }: Props) {
   const offset = circumference - (value / 100) * circumference;
   const strokeWidth = 6;
 
+  const gradientId = `ring-gradient-${label}`;
+
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-2 relative">
       <svg width={size} height={size} className="-rotate-90">
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1E3A8A" />
+            <stop offset="50%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#60A5FA" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -26,7 +35,7 @@ export default function ScoreRing({ value, label, size = 80 }: Props) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#2563EB"
+          stroke={`url(#${gradientId})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -35,9 +44,9 @@ export default function ScoreRing({ value, label, size = 80 }: Props) {
         />
       </svg>
       <div className="absolute flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-        <span className="text-lg font-bold text-text">{value}</span>
+        <span className="text-lg font-extrabold text-gradient">{value}</span>
       </div>
-      <span className="text-xs text-muted font-medium">{label}</span>
+      <span className="text-xs text-muted font-semibold">{label}</span>
     </div>
   );
 }

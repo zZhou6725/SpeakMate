@@ -10,6 +10,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from ..core.config import settings
+from ..services.audio_analyzer import analyze_audio
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,17 @@ def _read_wav(path: str) -> np.ndarray:
     return audio / max_val
 
 
+class AudioPronInfo(BaseModel):
+    score: int = 0
+    speech_rate: int = 0
+    pitch_variation: int = 0
+    energy_consistency: int = 0
+    pause_ratio: int = 0
+
+
 class SpeechOut(BaseModel):
     text: str
+    pronunciation: AudioPronInfo | None = None
 
 
 @router.post("", response_model=SpeechOut)
@@ -64,7 +74,11 @@ async def transcribe_speech(file: UploadFile = File(...)):
         model = _get_model()
         result = model.transcribe(audio, language="en", fp16=False)
         text = result["text"].strip()
-        return SpeechOut(text=text)
+        audio_pron = analyze_audio(audio, text)
+        return SpeechOut(
+            text=text,
+            pronunciation=AudioPronInfo(**audio_pron),
+        )
     except Exception:
         logger.exception("Whisper transcription failed")
         raise HTTPException(status_code=500, detail="Speech recognition failed")

@@ -181,10 +181,13 @@ async def send_message(
 
         feedback, radar = _compute_scores(correction_dict, pronunciation_dict)
 
+        pron_items = pronunciation_dict.get("items") if pronunciation_dict else None
+
         db.add(Dialogue(
             session_id=session_id,
             ai_text=full_reply,
             pronunciation_score=float(feedback.pronunciation),
+            pronunciation_items=pron_items,
             timestamp=now,
         ))
 

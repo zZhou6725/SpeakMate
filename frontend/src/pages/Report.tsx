@@ -31,9 +31,15 @@ export default function Report() {
       });
   }, [sessionId]);
 
+  const handlePreview = () => {
+    window.open(`/api/reports/${sessionId}/preview`, '_blank');
+  };
+
   const handleExport = () => {
-    // Placeholder: future export functionality
-    window.open(`/api/reports/${sessionId}/export`, '_blank');
+    const a = document.createElement('a');
+    a.href = `/api/reports/${sessionId}/export`;
+    a.download = `speakmate-report-${sessionId}.pdf`;
+    a.click();
   };
 
   if (loading) {
@@ -76,10 +82,16 @@ export default function Report() {
             返回历史记录
           </button>
           <button
+            onClick={handlePreview}
+            className="px-5 py-2 rounded-card text-sm font-medium text-primary border border-primary hover:bg-blue-50 bg-white transition-colors"
+          >
+            预览报告
+          </button>
+          <button
             onClick={handleExport}
             className="px-5 py-2 rounded-card text-sm font-medium text-white bg-primary hover:bg-blue-700 transition-colors shadow-sm"
           >
-            导出报告
+            导出PDF
           </button>
         </div>
       </div>

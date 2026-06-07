@@ -44,6 +44,18 @@ export interface HistoryFiltersType {
   timeRanges: string[];
 }
 
+export interface CorrectionItem {
+  wrong: string;
+  correct: string;
+  reason: string;
+}
+
+export interface GrammarCorrection {
+  original: string;
+  corrected: string;
+  items: CorrectionItem[];
+}
+
 export interface PracticeSession {
   id: number;
   scenarioId: number;

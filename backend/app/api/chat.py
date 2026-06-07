@@ -42,10 +42,10 @@ SCENARIO_NAMES: dict[int, str] = {
 
 # Scenario id → opening AI greeting (fixed — not LLM-generated)
 OPENING_LINES: dict[int, str] = {
-    1: "请简单介绍一下你自己。",
-    2: "欢迎光临！请问需要点些什么？",
-    3: "我们来讨论一下第三季度的项目时间表。",
-    4: "你好！请问你要去哪里？",
+    1: "Hi there, welcome! Tell me a little about yourself.",
+    2: "Hey, welcome to The Garden Bistro! What can I get for you today?",
+    3: "Hey, good to see you. Let's catch up on the Q3 project timeline.",
+    4: "Hi there! Where are you planning to travel to?",
 }
 
 

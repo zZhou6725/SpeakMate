@@ -50,11 +50,6 @@ export default function ScenarioCard({ scenario, selected, onSelect }: Props) {
       {/* Info area */}
       <div className="p-4 text-center">
         <p className="font-semibold text-text text-base">{scenario.name}</p>
-        <span
-          className={`inline-block mt-2 text-xs px-3 py-1 rounded-full border ${difficultyColors[scenario.difficulty]}`}
-        >
-          {scenario.difficulty}
-        </span>
       </div>
     </button>
   );

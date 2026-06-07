@@ -1,5 +1,7 @@
 """Report API — view, preview and export practice session reports."""
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import select
@@ -14,7 +16,10 @@ from ..schemas.chat import (
     FeedbackOut,
     RadarDataOut,
     SessionOut,
+    VocabularyOut,
 )
+from ..schemas.correction import CorrectionOut
+from ..schemas.pronunciation import PronunciationOut
 from ..services.report_exporter import ReportData, build_pdf, build_pdf_preview_page
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -85,6 +90,34 @@ async def get_report(
         radar = RadarDataOut(pronunciation=0, grammar=0, vocabulary=0, fluency=0, confidence=0)
         feedback = FeedbackOut(grammar=0, pronunciation=0, fluency=0)
 
+    # Aggregate correction items from all dialogues in ReportData
+    correction_out = CorrectionOut(
+        original="", corrected="", items=[
+            {"wrong": item.get("wrong", ""), "correct": item.get("correct", ""), "reason": item.get("reason", "")}
+            for item in data.grammar_items
+        ]
+    ) if data.grammar_items else None
+
+    pronunciation_out = PronunciationOut(
+        text="", score=data.pronunciation_score, items=data.pronunciation_items
+    ) if data.pronunciation_items else None
+
+    # Compute vocabulary from conversation user texts
+    user_texts = [msg["user"] for msg in data.conversation if msg.get("user")]
+    all_words: list[str] = []
+    for text in user_texts:
+        all_words.extend(re.findall(r"[a-zA-Z]+", text.lower()))
+    total = len(all_words)
+    unique = len(set(all_words))
+    avg_len = round(sum(len(w) for w in all_words) / total, 1) if total else 0.0
+    wrong_words: set[str] = set()
+    for item in data.grammar_items:
+        w = item.get("wrong", "").lower()
+        wrong_words.update(re.findall(r"[a-zA-Z]+", w))
+    matched = len(wrong_words & set(all_words))
+    accuracy = round((total - matched) / total * 100) if total else 100
+    vocabulary = VocabularyOut(totalWords=total, uniqueWords=unique, avgWordLength=avg_len, accuracy=accuracy)
+
     scenario_id = SCENARIO_NAMES.get(data.scenario, 1)
 
     return SessionOut(
@@ -95,6 +128,9 @@ async def get_report(
         conversation=conversation,
         feedback=feedback,
         radarData=radar,
+        vocabulary=vocabulary,
+        correction=correction_out,
+        pronunciation=pronunciation_out,
         score=data.score,
         duration=data.duration,
     )

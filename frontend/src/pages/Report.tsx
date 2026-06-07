@@ -133,7 +133,12 @@ export default function Report() {
 
         {/* Feedback Sidebar */}
         <div>
-          <FeedbackPanel data={session.feedback} />
+          <FeedbackPanel
+            data={session.feedback}
+            correction={session.correction}
+            pronunciation={session.pronunciation}
+            vocabulary={session.vocabulary}
+          />
         </div>
       </div>
     </div>

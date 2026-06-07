@@ -103,7 +103,7 @@ export default function PracticeRoom() {
 
         {/* Mic + Text Input — bottom bar */}
         <div className="bg-white rounded-card px-5 py-4 shadow-sm border border-gray-100 flex flex-col items-center gap-3 shrink-0">
-          <MicButton onTranscription={(text) => setTextInput((prev) => prev + text)} />
+          <MicButton onTranscription={(text) => { if (text.trim()) sendMessageAction(text); }} />
           <div className="w-full">
             <input
               type="text"

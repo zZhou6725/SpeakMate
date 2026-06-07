@@ -25,6 +25,8 @@ interface AppState {
   loadScenarios: () => Promise<void>;
   selectedScenarioId: number | null;
   selectScenario: (id: number) => void;
+  selectedDifficulty: string;
+  selectDifficulty: (d: string) => void;
 
   // Dashboard stats
   dashboardStats: DashboardStats;
@@ -78,6 +80,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   selectedScenarioId: null,
   selectScenario: (id) => set({ selectedScenarioId: id }),
+  selectedDifficulty: '中等',
+  selectDifficulty: (d) => set({ selectedDifficulty: d }),
 
   dashboardStats: { totalPractice: 0, averageScore: 0, bestScore: 0 },
   dashboardLoading: false,
@@ -126,9 +130,9 @@ export const useStore = create<AppState>((set, get) => ({
   vocabulary: null,
 
   startSession: async () => {
-    const { selectedScenarioId } = get();
+    const { selectedScenarioId, selectedDifficulty } = get();
     if (!selectedScenarioId) return;
-    const session = await createSession(selectedScenarioId);
+    const session = await createSession(selectedScenarioId, selectedDifficulty);
     set({
       isSessionActive: true,
       currentSessionId: session.id,

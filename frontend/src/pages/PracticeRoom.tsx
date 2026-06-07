@@ -22,6 +22,7 @@ export default function PracticeRoom() {
     vocabulary,
     scenarios,
     selectedScenarioId,
+    selectedDifficulty,
     currentSessionId,
     sendMessageAction,
     endSessionAction,
@@ -61,8 +62,11 @@ export default function PracticeRoom() {
       <aside className="bg-white rounded-card p-5 shadow-sm border border-gray-100 flex flex-col items-center text-center">
         <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1">场景</p>
         <h2 className="text-xl font-bold text-text mb-1">{selected?.name ?? '—'}</h2>
-        <p className="text-sm text-muted mb-8">
+        <p className="text-sm text-muted mb-2">
           扮演角色：<span className="font-semibold text-primary">{role}</span>
+        </p>
+        <p className="text-sm text-muted mb-8">
+          难度：<span className="font-semibold text-primary">{selectedDifficulty}</span>
         </p>
 
         <div className="w-full space-y-2.5 mt-auto">

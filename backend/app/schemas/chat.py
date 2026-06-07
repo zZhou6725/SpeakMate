@@ -42,12 +42,14 @@ class VocabularyOut(BaseModel):
 
 class SessionCreateIn(BaseModel):
     scenarioId: int
+    difficulty: str = "中等"
 
 
 class SessionOut(BaseModel):
     id: int
     scenarioId: int
     scenarioName: str
+    difficulty: str
     conversation: list[ChatMessageOut]
     feedback: FeedbackOut
     radarData: RadarDataOut

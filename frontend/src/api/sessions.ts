@@ -9,8 +9,8 @@ interface MessageOut {
   pronunciation?: PronunciationResult | null;
 }
 
-export function createSession(scenarioId: number): Promise<PracticeSession> {
-  return post<PracticeSession>('/sessions', { scenarioId });
+export function createSession(scenarioId: number, difficulty: string): Promise<PracticeSession> {
+  return post<PracticeSession>('/sessions', { scenarioId, difficulty });
 }
 
 export function sendMessage(sessionId: number, message: string): Promise<MessageOut> {

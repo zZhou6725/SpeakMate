@@ -77,9 +77,30 @@ SYSTEM_PROMPTS: dict[str, str] = {
 }
 
 DIFFICULTY_MODIFIER: dict[str, str] = {
-    "简单": "Use simple vocabulary and short, clear sentences. Speak slowly and avoid idioms.",
-    "中等": "Use everyday conversational English with moderate vocabulary.",
-    "困难": "Use advanced vocabulary, idiomatic expressions, and complex sentence structures. Challenge the user with deeper questions.",
+    "简单": (
+        "EASY MODE — You are talking to an English BEGINNER.\n"
+        "- Use ONLY basic vocabulary (A1-A2 level, top 1000 most common words)\n"
+        "- Speak in SHORT sentences (5-10 words max per sentence)\n"
+        "- Speak SLOWLY — avoid complex grammar, passive voice, conditionals\n"
+        "- If the user struggles, gently rephrase using simpler words\n"
+        "- After your reply, add a brief CHINESE translation in parentheses so they can check understanding\n"
+        "  Example: 'I like cooking too. What do you like to make? (我也喜欢做饭，你喜欢做什么？)'"
+    ),
+    "中等": (
+        "MEDIUM MODE — You are talking to an INTERMEDIATE English learner.\n"
+        "- Use everyday conversational English with moderate vocabulary\n"
+        "- Use common idioms occasionally and explain them naturally\n"
+        "- Mix short and medium-length sentences\n"
+        "- When you use a slightly advanced word, casually mention its meaning"
+    ),
+    "困难": (
+        "HARD MODE — You are talking to an ADVANCED English learner who wants to be challenged.\n"
+        "- Use sophisticated vocabulary, idiomatic expressions, phrasal verbs, and complex structures\n"
+        "- Speak at native speed — use contractions, connected speech patterns, cultural references\n"
+        "- Challenge the user with follow-up questions that require nuanced answers\n"
+        "- Occasionally use rare words or slang — but explain them if the user seems confused\n"
+        "- Push back on simple answers: 'That's interesting, but tell me more — why do you think that?'"
+    ),
 }
 
 FALLBACK_SCRIPTS: dict[str, list[str]] = {

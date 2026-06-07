@@ -1,3 +1,8 @@
+
+demo演示视频链接
+通过网盘分享的文件：speakmate_demo.mp4
+链接: https://pan.baidu.com/s/1ZMu5s0LwatK9uOoi6Swgcg 提取码: cra9
+
 # SpeakMate
 
 AI 英语口语陪练应用 — 场景化对话练习，支持面试/餐厅/会议/旅行四种场景。

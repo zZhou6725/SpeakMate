@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel
 
+from .correction import CorrectionOut
+
 
 class ChatMessageOut(BaseModel):
     role: str  # "ai" | "user"
@@ -53,5 +55,6 @@ class MessageOut(BaseModel):
     userMessage: ChatMessageOut
     aiMessage: ChatMessageOut
     feedback: FeedbackOut
+    correction: CorrectionOut | None = None
 
     model_config = {"from_attributes": True}

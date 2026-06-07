@@ -38,7 +38,10 @@ export default function PracticeRoom() {
   const [textInput, setTextInput] = useState('');
   const [sending, setSending] = useState(false);
   const [speechOn, setSpeechOn] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const { speak, stop, toggle } = useSpeech();
+  const startSession = useStore((s) => s.startSession);
   const lastAIText = useRef('');
 
   useEffect(() => {
@@ -54,6 +57,28 @@ export default function PracticeRoom() {
   const selected = scenarios.find((sc) => sc.id === selectedScenarioId);
   const role = selected ? (roleMap[selected.name] ?? '—') : '—';
   const diffStyle = diffConfig[selectedDifficulty] ?? diffConfig['中等'];
+
+  const handlePauseToggle = () => {
+    if (paused) {
+      setPaused(false);
+    } else {
+      stop(); // stop any ongoing speech
+      setPaused(true);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm('确定要重置当前会话吗？对话记录将丢失。')) return;
+    setResetting(true);
+    setPaused(false);
+    try {
+      await endSessionAction();
+      await startSession();
+    } catch {
+      // ignore
+    }
+    setResetting(false);
+  };
 
   const handleEndSession = async () => {
     await endSessionAction();
@@ -90,11 +115,46 @@ export default function PracticeRoom() {
           {diffStyle.label} · {selectedDifficulty}
         </span>
         <div className="w-full space-y-2 mt-auto">
-          <button className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
-            暂停会话
+          <button
+            onClick={handlePauseToggle}
+            className={`w-full px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex items-center justify-center gap-2 ${
+              paused
+                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            {paused ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+                </svg>
+                继续会话
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                </svg>
+                暂停会话
+              </>
+            )}
           </button>
-          <button className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-50 text-muted border border-gray-200 hover:bg-gray-100 transition-colors">
-            重置会话
+          <button
+            onClick={handleReset}
+            disabled={resetting}
+            className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-50 text-muted border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {resetting ? (
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+              </svg>
+            )}
+            {resetting ? '重置中...' : '重置会话'}
           </button>
         </div>
       </aside>
@@ -104,8 +164,8 @@ export default function PracticeRoom() {
         {/* Top bar: End session */}
         <div className="glass-card rounded-xl px-5 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-sm font-medium text-text">练习进行中</span>
+            <div className={`w-2 h-2 rounded-full ${paused ? 'bg-amber-400' : 'bg-green-400 animate-pulse'}`} />
+            <span className="text-sm font-medium text-text">{paused ? '已暂停' : '练习进行中'}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -134,7 +194,18 @@ export default function PracticeRoom() {
         </div>
 
         {/* Chat Messages */}
-        <div className="glass-card rounded-2xl p-5 flex-1 min-h-0 overflow-y-auto">
+        <div className="glass-card rounded-2xl p-5 flex-1 min-h-0 overflow-y-auto relative">
+          {paused && conversation.length > 0 && (
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
+              <div className="text-center">
+                <svg className="w-12 h-12 text-amber-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.401.604-.401.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.959.401v0a.656.656 0 00.658-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z" />
+                </svg>
+                <p className="text-text font-semibold text-base mb-1">会话已暂停</p>
+                <p className="text-muted text-sm">点击左侧「继续会话」按钮恢复</p>
+              </div>
+            </div>
+          )}
           {conversation.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted text-sm gap-2">
               <svg className="w-10 h-10 text-primary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -151,6 +222,7 @@ export default function PracticeRoom() {
         </div>
 
         {/* Input Bar */}
+        {!paused && (
         <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4 shrink-0">
           <MicButton onTranscription={(text) => { if (text.trim()) sendMessageAction(text); }} />
           <div className="flex-1 relative">
@@ -185,6 +257,7 @@ export default function PracticeRoom() {
             )}
           </button>
         </div>
+        )}
       </main>
 
       {/* ────── Right Panel: Real-time Feedback ────── */}

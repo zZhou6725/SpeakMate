@@ -11,10 +11,10 @@ export default function ChatBubble({ role, message }: ChatMessage) {
             : 'bg-hero-gradient text-white rounded-tr-md shadow-md shadow-primary/20'
         }`}
       >
-        <p className="text-xs font-semibold mb-1 opacity-60">
+        <p className={`text-xs font-semibold mb-1 ${isAI ? 'text-primary/60' : 'text-blue-100'}`}>
           {isAI ? 'AI' : '你'}
         </p>
-        <p>{message}</p>
+        <p className={isAI ? '' : ''}>{message}</p>
       </div>
     </div>
   );

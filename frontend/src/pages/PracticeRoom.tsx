@@ -61,7 +61,7 @@ export default function PracticeRoom() {
       {/* ────── Left Panel: Scene Info + Actions ────── */}
       <aside className="glass-card rounded-2xl p-6 flex flex-col items-center text-center">
         <div className="w-14 h-14 rounded-2xl bg-hero-gradient flex items-center justify-center mb-4 shadow-glow">
-          <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="w-7 h-7 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
           </svg>
         </div>
@@ -89,7 +89,7 @@ export default function PracticeRoom() {
           </div>
           <button
             onClick={handleEndSession}
-            className="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all shadow-sm shadow-red-500/20"
+            className="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-blue-800 text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all shadow-sm shadow-red-500/20"
           >
             结束会话
           </button>
@@ -131,7 +131,7 @@ export default function PracticeRoom() {
             disabled={!textInput.trim() || sending}
             className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
               textInput.trim() && !sending
-                ? 'bg-hero-gradient text-white shadow-md shadow-primary/30 hover:shadow-lg hover:scale-105 active:scale-95'
+                ? 'bg-hero-gradient text-blue-800 shadow-md shadow-primary/30 hover:shadow-lg hover:scale-105 active:scale-95'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >

@@ -73,7 +73,7 @@ export default function History() {
                   onClick={() => handleFilterScenario(s)}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
                     scenarioFilter === s
-                      ? 'bg-hero-gradient text-white shadow-sm'
+                      ? 'bg-hero-gradient text-blue-800 shadow-sm'
                       : 'bg-white text-muted border border-gray-100 hover:border-primary/30 hover:text-primary'
                   }`}
                 >
@@ -92,7 +92,7 @@ export default function History() {
                   onClick={() => handleFilterTime(t)}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
                     timeFilter === t
-                      ? 'bg-hero-gradient text-white shadow-sm'
+                      ? 'bg-hero-gradient text-blue-800 shadow-sm'
                       : 'bg-white text-muted border border-gray-100 hover:border-primary/30 hover:text-primary'
                   }`}
                 >
@@ -141,7 +141,7 @@ export default function History() {
                   <td className="px-6 py-4 text-text font-medium">{entry.date}</td>
                   <td className="px-6 py-4 text-muted">{entry.scenario}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-xl text-xs font-bold text-white ${
+                    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-xl text-xs font-bold text-blue-800 ${
                       entry.score >= 80 ? 'bg-gradient-to-br from-green-400 to-green-500' :
                       entry.score >= 60 ? 'bg-gradient-to-br from-amber-400 to-amber-500' :
                       'bg-gradient-to-br from-red-400 to-red-500'
@@ -156,7 +156,7 @@ export default function History() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleViewReport(entry.id)}
-                        className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-hero-gradient hover:shadow-md transition-all"
+                        className="px-4 py-2 rounded-xl text-xs font-semibold text-blue-800 bg-hero-gradient hover:shadow-md transition-all"
                       >
                         查看报告
                       </button>

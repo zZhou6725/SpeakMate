@@ -64,7 +64,7 @@ export default function Report() {
         <p className="text-muted text-lg">{error || '报告未找到。'}</p>
         <button
           onClick={() => navigate('/history')}
-          className="mt-6 px-6 py-2.5 rounded-xl bg-hero-gradient text-blue-800 font-medium hover:shadow-lg transition-all"
+          className="mt-6 px-6 py-2.5 rounded-xl bg-hero-gradient text-white font-medium hover:shadow-lg transition-all"
         >
           返回历史记录
         </button>

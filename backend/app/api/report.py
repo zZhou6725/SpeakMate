@@ -91,6 +91,7 @@ async def get_report(
         id=report_id,
         scenarioId=scenario_id,
         scenarioName=data.scenario,
+        difficulty=data.difficulty,
         conversation=conversation,
         feedback=feedback,
         radarData=radar,

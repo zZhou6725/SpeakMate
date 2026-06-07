@@ -224,35 +224,39 @@ async def end_session(
     now = datetime.now()
     session.end_time = now
 
-    # Calculate average score from feedbacks
-    result = await db.execute(
-        select(Dialogue).where(
-            Dialogue.session_id == session_id,
-            Dialogue.pronunciation_score.isnot(None),
-        )
-    )
-    scored = result.scalars().all()
-    scores = [int(d.pronunciation_score) for d in scored if d.pronunciation_score]
-    avg_score = round(sum(scores) / len(scores)) if scores else 85
-    session.overall_score = float(avg_score)
-
-    _, radar = _compute_scores(None, None)
-
-    # Save evaluation record
-    db.add(Evaluation(
-        session_id=session_id,
-        error_type="general",
-        error_count=0,
-        grammar_score=float(radar.grammar),
-        pronunciation_score=float(radar.pronunciation),
-    ))
-
-    # Build full conversation
+    # Query all dialogues for this session
     result = await db.execute(
         select(Dialogue).where(Dialogue.session_id == session_id).order_by(Dialogue.id)
     )
     all_dialogues = result.scalars().all()
 
+    # Aggregate grammar and pronunciation data from all dialogue turns
+    all_items: list[dict] = []
+    pron_scores: list[int] = []
+    for d in all_dialogues:
+        if d.grammar_correction and d.grammar_correction.get("items"):
+            all_items.extend(d.grammar_correction["items"])
+        if d.pronunciation_score:
+            pron_scores.append(int(d.pronunciation_score))
+
+    grammar_correction = {"items": all_items} if all_items else None
+    pron_dict = {"score": round(sum(pron_scores) / len(pron_scores))} if pron_scores else {"score": 70}
+
+    feedback, radar = _compute_scores(grammar_correction, pron_dict)
+
+    avg_score = round((feedback.grammar + feedback.pronunciation + feedback.fluency) / 3)
+    session.overall_score = float(avg_score)
+
+    # Save evaluation record
+    db.add(Evaluation(
+        session_id=session_id,
+        error_type="general",
+        error_count=len(all_items),
+        grammar_score=float(radar.grammar),
+        pronunciation_score=float(radar.pronunciation),
+    ))
+
+    # Build full conversation
     conversation: list[ChatMessageOut] = []
     for d in all_dialogues:
         if d.ai_text:

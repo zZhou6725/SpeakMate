@@ -5,13 +5,13 @@ export default function ChatBubble({ role, message }: ChatMessage) {
   return (
     <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
       <div
-        className={`max-w-[75%] px-4 py-3 rounded-card text-sm leading-relaxed ${
+        className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
           isAI
-            ? 'bg-gray-100 text-text rounded-tl-none'
-            : 'bg-primary text-white rounded-tr-none'
+            ? 'glass-card rounded-tl-md'
+            : 'bg-hero-gradient text-white rounded-tr-md shadow-md shadow-primary/20'
         }`}
       >
-        <p className="text-xs font-semibold mb-1 opacity-70">
+        <p className="text-xs font-semibold mb-1 opacity-60">
           {isAI ? 'AI' : '你'}
         </p>
         <p>{message}</p>

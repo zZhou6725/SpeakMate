@@ -51,52 +51,58 @@ export default function PracticeRoom() {
     try {
       await sendMessageAction(msg);
     } catch {
-      // ignore — feedback still updates via store
+      // ignore
     }
     setSending(false);
   };
 
   return (
-    <div className="grid grid-cols-[20%_55%_25%] gap-4 h-[calc(100vh-6rem)]">
+    <div className="grid grid-cols-[18%_54%_28%] gap-5 h-[calc(100vh-7rem)]">
       {/* ────── Left Panel: Scene Info + Actions ────── */}
-      <aside className="bg-white rounded-card p-5 shadow-sm border border-gray-100 flex flex-col items-center text-center">
-        <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1">场景</p>
-        <h2 className="text-xl font-bold text-text mb-1">{selected?.name ?? '—'}</h2>
-        <p className="text-sm text-muted mb-2">
-          扮演角色：<span className="font-semibold text-primary">{role}</span>
+      <aside className="glass-card rounded-2xl p-6 flex flex-col items-center text-center">
+        <div className="w-14 h-14 rounded-2xl bg-hero-gradient flex items-center justify-center mb-4 shadow-glow">
+          <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-bold text-text mb-0.5">{selected?.name ?? '—'}</h2>
+        <p className="text-xs text-muted mb-4">
+          <span className="font-semibold text-primary">{role}</span> · {selectedDifficulty}
         </p>
-        <p className="text-sm text-muted mb-8">
-          难度：<span className="font-semibold text-primary">{selectedDifficulty}</span>
-        </p>
-
-        <div className="w-full space-y-2.5 mt-auto">
-          <button className="w-full px-4 py-2.5 rounded-card text-sm font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition-colors">
+        <div className="w-full space-y-2 mt-auto">
+          <button className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
             暂停会话
           </button>
-          <button className="w-full px-4 py-2.5 rounded-card text-sm font-medium bg-gray-50 text-muted border border-gray-200 hover:bg-gray-100 transition-colors">
+          <button className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-50 text-muted border border-gray-200 hover:bg-gray-100 transition-colors">
             重置会话
           </button>
         </div>
       </aside>
 
-      {/* ────── Center Panel: Chat + Mic + Input ────── */}
+      {/* ────── Center Panel: Chat + Input ────── */}
       <main className="flex flex-col gap-4 min-h-0">
         {/* Top bar: End session */}
-        <div className="bg-white rounded-card px-4 py-2.5 shadow-sm border border-gray-100 flex items-center justify-between shrink-0">
-          <span className="text-xs text-muted">练习进行中...</span>
+        <div className="glass-card rounded-xl px-5 py-3 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm font-medium text-text">练习进行中</span>
+          </div>
           <button
             onClick={handleEndSession}
-            className="px-5 py-2 rounded-card bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors shadow-sm"
+            className="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all shadow-sm shadow-red-500/20"
           >
             结束会话
           </button>
         </div>
 
-        {/* Chat Messages — top half */}
-        <div className="bg-white rounded-card p-4 shadow-sm border border-gray-100 flex-1 min-h-0 overflow-y-auto">
+        {/* Chat Messages */}
+        <div className="glass-card rounded-2xl p-5 flex-1 min-h-0 overflow-y-auto">
           {conversation.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-muted text-sm">
-              选择一个场景开始练习，对话将在这里显示。
+            <div className="flex flex-col items-center justify-center h-full text-muted text-sm gap-2">
+              <svg className="w-10 h-10 text-primary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+              <p>开始对话，AI 将在这里回应你</p>
             </div>
           ) : (
             conversation.map((msg, i) => (
@@ -106,20 +112,40 @@ export default function PracticeRoom() {
           <div ref={chatEndRef} />
         </div>
 
-        {/* Mic + Text Input — bottom bar */}
-        <div className="bg-white rounded-card px-5 py-4 shadow-sm border border-gray-100 flex flex-col items-center gap-3 shrink-0">
+        {/* Input Bar */}
+        <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4 shrink-0">
           <MicButton onTranscription={(text) => { if (text.trim()) sendMessageAction(text); }} />
-          <div className="w-full">
+          <div className="flex-1 relative">
             <input
               type="text"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="在这里输入你的回答..."
+              placeholder="输入你的回答..."
               disabled={sending}
-              className="w-full px-4 py-3 rounded-card border border-gray-200 text-sm text-text placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:bg-gray-50"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-text placeholder:text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all disabled:bg-gray-50 bg-white/80"
             />
           </div>
+          <button
+            onClick={handleSend}
+            disabled={!textInput.trim() || sending}
+            className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              textInput.trim() && !sending
+                ? 'bg-hero-gradient text-white shadow-md shadow-primary/30 hover:shadow-lg hover:scale-105 active:scale-95'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {sending ? (
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+              </svg>
+            )}
+          </button>
         </div>
       </main>
 

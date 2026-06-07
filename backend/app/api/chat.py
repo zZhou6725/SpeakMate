@@ -307,6 +307,23 @@ async def end_session(
     user_texts = [d.user_text for d in all_dialogues if d.user_text]
     vocabulary = _compute_vocabulary(user_texts, all_items)
 
+    # Aggregate pronunciation items from all dialogues
+    pron_items: list[dict] = []
+    for d in all_dialogues:
+        if d.pronunciation_items:
+            items = d.pronunciation_items if isinstance(d.pronunciation_items, list) else d.pronunciation_items.get("items", [])
+            pron_items.extend(items)
+
+    correction_out = CorrectionOut(
+        original="", corrected="", items=[
+            {"wrong": item.get("wrong", ""), "correct": item.get("correct", ""), "reason": item.get("reason", "")}
+            for item in all_items
+        ]
+    ) if all_items else None
+    pronunciation_out = PronunciationOut(
+        text="", score=feedback.pronunciation, items=pron_items
+    ) if pron_items else None
+
     return SessionOut(
         id=session.id,
         scenarioId=scenario_id,
@@ -320,6 +337,8 @@ async def end_session(
         ),
         radarData=radar,
         vocabulary=vocabulary,
+        correction=correction_out,
+        pronunciation=pronunciation_out,
         score=avg_score,
         duration=_fmt_duration(session.start_time, session.end_time),
     )

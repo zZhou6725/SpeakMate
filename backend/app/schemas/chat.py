@@ -54,6 +54,8 @@ class SessionOut(BaseModel):
     feedback: FeedbackOut
     radarData: RadarDataOut
     vocabulary: VocabularyOut | None = None
+    correction: CorrectionOut | None = None
+    pronunciation: PronunciationOut | None = None
     score: int
     duration: str
 

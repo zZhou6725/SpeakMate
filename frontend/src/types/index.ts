@@ -84,6 +84,8 @@ export interface PracticeSession {
   feedback: FeedbackData;
   radarData: RadarData;
   vocabulary: VocabularyStats | null;
+  correction?: GrammarCorrection | null;
+  pronunciation?: PronunciationResult | null;
   score: number;
   duration: string;
 }

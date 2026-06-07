@@ -17,13 +17,15 @@ setup_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup/shutdown hook: run migrations on startup."""
+    import asyncio
     import os
-    from alembic.config import Config
+
     from alembic import command
+    from alembic.config import Config
 
     alembic_ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
     alembic_cfg = Config(alembic_ini)
-    command.upgrade(alembic_cfg, "head")
+    await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
     yield
     await engine.dispose()
 

@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -55,22 +54,35 @@ def _scenario_name_to_id(name: str) -> int:
     return 1
 
 
-def _generate_feedback() -> FeedbackOut:
-    return FeedbackOut(
-        grammar=random.randint(72, 95),
-        pronunciation=random.randint(72, 95),
-        fluency=random.randint(72, 95),
-    )
+def _compute_grammar_score(correction: dict | None) -> int:
+    """Derive grammar score from correction items count. Fewer errors = higher score."""
+    if correction is None:
+        return 70
+    items = correction.get("items", [])
+    if not items:
+        return 88
+    return max(45, 88 - len(items) * 8)
 
 
-def _generate_radar() -> RadarDataOut:
-    return RadarDataOut(
-        pronunciation=random.randint(75, 95),
-        grammar=random.randint(75, 95),
-        vocabulary=random.randint(75, 95),
-        fluency=random.randint(75, 95),
-        confidence=random.randint(75, 95),
+def _compute_scores(
+    correction: dict | None,
+    pronunciation: dict | None,
+) -> tuple[FeedbackOut, RadarDataOut]:
+    grammar = _compute_grammar_score(correction)
+    pron = pronunciation.get("score", 70) if pronunciation else 70
+    fluency = max(45, int((grammar + pron) / 2) - 2)
+    vocabulary = max(45, grammar - 5)
+    confidence = max(45, int((grammar + pron + fluency) / 3))
+
+    feedback = FeedbackOut(grammar=grammar, pronunciation=pron, fluency=fluency)
+    radar = RadarDataOut(
+        pronunciation=pron,
+        grammar=grammar,
+        vocabulary=vocabulary,
+        fluency=fluency,
+        confidence=confidence,
     )
+    return feedback, radar
 
 
 def _fmt_duration(start: datetime, end: datetime | None) -> str:
@@ -167,10 +179,7 @@ async def send_message(
             timestamp=now,
         ))
 
-        feedback = _generate_feedback()
-        # Override pronunciation score with LLM-based result if available
-        if pronunciation_dict and pronunciation_dict.get("score", 0) > 0:
-            feedback.pronunciation = pronunciation_dict["score"]
+        feedback, radar = _compute_scores(correction_dict, pronunciation_dict)
 
         db.add(Dialogue(
             session_id=session_id,
@@ -227,13 +236,13 @@ async def end_session(
     avg_score = round(sum(scores) / len(scores)) if scores else 85
     session.overall_score = float(avg_score)
 
-    radar = _generate_radar()
+    _, radar = _compute_scores(None, None)
 
     # Save evaluation record
     db.add(Evaluation(
         session_id=session_id,
         error_type="general",
-        error_count=random.randint(1, 3),
+        error_count=0,
         grammar_score=float(radar.grammar),
         pronunciation_score=float(radar.pronunciation),
     ))
@@ -261,7 +270,7 @@ async def end_session(
         feedback=FeedbackOut(
             grammar=radar.grammar,
             pronunciation=radar.pronunciation,
-            fluency=radar.fluency + random.randint(-2, 2),
+            fluency=radar.fluency,
         ),
         radarData=radar,
         score=avg_score,

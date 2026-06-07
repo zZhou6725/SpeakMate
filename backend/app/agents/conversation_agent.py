@@ -7,7 +7,7 @@ to generate contextually appropriate AI replies.
 import logging
 
 from ..models.dialogue import Dialogue
-from ..services.llm_service import chat_completion, is_llm_configured
+from ..services.llm_service import chat_completion, chat_completion_stream, is_llm_configured
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +131,34 @@ def _build_messages(
     messages.append({"role": "user", "content": current_user_text})
 
     return messages
+
+
+async def generate_ai_reply_stream(
+    scenario: str,
+    difficulty: str,
+    dialogues: list[Dialogue],
+    current_user_text: str,
+):
+    """Generate AI reply as a stream of token strings.
+
+    Yields each content chunk from the LLM. Falls back to yielding the scripted
+    reply as a single chunk if the LLM is unavailable.
+    """
+    if is_llm_configured():
+        try:
+            system_prompt = _build_system_prompt(scenario, difficulty)
+            messages = _build_messages(system_prompt, dialogues, current_user_text)
+            async for token in chat_completion_stream(messages):
+                yield token
+            logger.info("LLM stream completed for scenario=%s", scenario)
+            return
+        except Exception as exc:
+            logger.warning("LLM stream failed, falling back to scripts: %s", exc)
+
+    # Fallback: yield entire scripted line at once
+    user_rounds = sum(1 for d in dialogues if d.user_text is not None)
+    script = FALLBACK_SCRIPTS.get(scenario, ["好的，明白了。"])
+    yield script[min(user_rounds, len(script) - 1)]
 
 
 async def generate_ai_reply(

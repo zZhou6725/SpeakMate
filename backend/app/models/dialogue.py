@@ -16,5 +16,6 @@ class Dialogue(Base):
     user_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     ai_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     pronunciation_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    pronunciation_items: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     grammar_correction: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)

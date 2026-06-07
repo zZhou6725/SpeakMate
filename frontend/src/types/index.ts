@@ -44,13 +44,56 @@ export interface HistoryFiltersType {
   timeRanges: string[];
 }
 
+export interface CorrectionItem {
+  wrong: string;
+  correct: string;
+  reason: string;
+}
+
+export interface GrammarCorrection {
+  original: string;
+  corrected: string;
+  items: CorrectionItem[];
+}
+
+export interface PronunciationItem {
+  word: string;
+  phonetic: string;
+  tip: string;
+}
+
+export interface PronunciationResult {
+  text: string;
+  score: number;
+  items: PronunciationItem[];
+}
+
+export interface SessionSummary {
+  overall: string;
+  strengths: string[];
+  improvements: string[];
+  tips: string[];
+}
+
+export interface VocabularyStats {
+  totalWords: number;
+  uniqueWords: number;
+  avgWordLength: number;
+  accuracy: number;
+}
+
 export interface PracticeSession {
   id: number;
   scenarioId: number;
   scenarioName: string;
+  difficulty: string;
   conversation: ChatMessage[];
   feedback: FeedbackData;
   radarData: RadarData;
+  vocabulary: VocabularyStats | null;
+  correction?: GrammarCorrection | null;
+  pronunciation?: PronunciationResult | null;
+  summary?: SessionSummary | null;
   score: number;
   duration: string;
 }

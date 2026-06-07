@@ -2,6 +2,9 @@
 
 from pydantic import BaseModel
 
+from .correction import CorrectionOut
+from .pronunciation import PronunciationOut
+
 
 class ChatMessageOut(BaseModel):
     role: str  # "ai" | "user"
@@ -28,17 +31,39 @@ class RadarDataOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class VocabularyOut(BaseModel):
+    totalWords: int
+    uniqueWords: int
+    avgWordLength: float
+    accuracy: int
+
+    model_config = {"from_attributes": True}
+
+
+class SummaryOut(BaseModel):
+    overall: str
+    strengths: list[str]
+    improvements: list[str]
+    tips: list[str]
+
+
 class SessionCreateIn(BaseModel):
     scenarioId: int
+    difficulty: str = "中等"
 
 
 class SessionOut(BaseModel):
     id: int
     scenarioId: int
     scenarioName: str
+    difficulty: str
     conversation: list[ChatMessageOut]
     feedback: FeedbackOut
     radarData: RadarDataOut
+    vocabulary: VocabularyOut | None = None
+    correction: CorrectionOut | None = None
+    pronunciation: PronunciationOut | None = None
+    summary: SummaryOut | None = None
     score: int
     duration: str
 
@@ -53,5 +78,7 @@ class MessageOut(BaseModel):
     userMessage: ChatMessageOut
     aiMessage: ChatMessageOut
     feedback: FeedbackOut
+    correction: CorrectionOut | None = None
+    pronunciation: PronunciationOut | None = None
 
     model_config = {"from_attributes": True}

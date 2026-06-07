@@ -26,7 +26,7 @@ def _fmt_duration(start: datetime, end: datetime | None) -> str:
 
 def _get_time_range_filter(time_range: str | None) -> datetime | None:
     """Return the earliest datetime for the given time range filter."""
-    now = datetime(2026, 6, 6)
+    now = datetime.now()
     if time_range == "本周":
         monday = now - timedelta(days=now.weekday())
         return monday.replace(hour=0, minute=0, second=0)

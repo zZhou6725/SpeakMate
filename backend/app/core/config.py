@@ -1,3 +1,4 @@
+
 """Application configuration loaded from .env / environment variables."""
 
 from pydantic_settings import BaseSettings
@@ -6,6 +7,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # LLM
     llm_api_key: str = "your-api-key-here"
+    llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    llm_model: str = "qwen-plus"
 
     # Database
     db_path: str = "./data/speakmate.db"

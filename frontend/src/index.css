@@ -4,14 +4,65 @@
 
 body {
   margin: 0;
-  background-color: #F8FAFC;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 30%, #F0F4FF 60%, #E0E7FF 100%);
+  background-attachment: fixed;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle dot pattern overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
 @layer utilities {
   .max-w-content {
-    max-width: 1200px;
+    max-width: 1280px;
   }
+}
+
+/* Glass card effect */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(239,246,255,0.9) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.04), 0 1px 2px rgba(37, 99, 235, 0.02);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #1E3A8A, #2563EB, #3B82F6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animated gradient border */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #60A5FA, #2563EB, #1E3A8A);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }

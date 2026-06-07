@@ -1,8 +1,9 @@
-"""Report API — view and export practice session reports."""
+"""Report API — view, preview and export practice session reports."""
 
-import random
+import re
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +16,13 @@ from ..schemas.chat import (
     FeedbackOut,
     RadarDataOut,
     SessionOut,
+    VocabularyOut,
 )
+from ..schemas.chat import SummaryOut
+from ..schemas.correction import CorrectionOut
+from ..schemas.pronunciation import PronunciationOut
+from ..agents.summary_agent import generate_summary
+from ..services.report_exporter import ReportData, build_pdf, build_pdf_preview_page
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -35,17 +42,12 @@ def _fmt_duration(start, end):
     return f"{minutes}分钟"
 
 
-@router.get("/{report_id}", response_model=SessionOut)
-async def get_report(
-    report_id: int,
-    db: AsyncSession = Depends(get_db),
-):
-    """Return the full report for a completed practice session."""
+async def _load_report_data(report_id: int, db: AsyncSession) -> ReportData:
+    """Load session, dialogues, and evaluation — shared by all endpoints."""
     session = await db.get(PracticeSession, report_id)
     if not session:
         raise HTTPException(404, "Report not found")
 
-    # Build full conversation from dialogues
     result = await db.execute(
         select(Dialogue)
         .where(Dialogue.session_id == report_id)
@@ -53,14 +55,6 @@ async def get_report(
     )
     dialogues = result.scalars().all()
 
-    conversation: list[ChatMessageOut] = []
-    for d in dialogues:
-        if d.ai_text:
-            conversation.append(ChatMessageOut(role="ai", message=d.ai_text))
-        if d.user_text:
-            conversation.append(ChatMessageOut(role="user", message=d.user_text))
-
-    # Get evaluation for radar data
     result = await db.execute(
         select(Evaluation)
         .where(Evaluation.session_id == report_id)
@@ -69,41 +63,119 @@ async def get_report(
     )
     eval_record = result.scalar()
 
-    if eval_record and eval_record.grammar_score and eval_record.pronunciation_score:
-        radar = RadarDataOut(
-            pronunciation=int(eval_record.pronunciation_score),
-            grammar=int(eval_record.grammar_score),
-            vocabulary=random.randint(75, 95),
-            fluency=random.randint(75, 95),
-            confidence=random.randint(75, 95),
-        )
-        feedback = FeedbackOut(
-            grammar=int(eval_record.grammar_score),
-            pronunciation=int(eval_record.pronunciation_score),
-            fluency=radar.fluency + random.randint(-2, 2),
-        )
+    return ReportData(session, list(dialogues), eval_record)
+
+
+@router.get("/{report_id}", response_model=SessionOut)
+async def get_report(
+    report_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the full report for a completed practice session."""
+    data = await _load_report_data(report_id, db)
+
+    conversation: list[ChatMessageOut] = []
+    for msg in data.conversation:
+        if msg["user"]:
+            conversation.append(ChatMessageOut(role="user", message=msg["user"]))
+        conversation.append(ChatMessageOut(role="ai", message=msg["ai"]))
+
+    if data.grammar_score or data.pronunciation_score:
+        gs = data.grammar_score
+        ps = data.pronunciation_score
+        fl = max(45, int((gs + ps) / 2) - 2)
+        vo = max(45, gs - 5)
+        co = max(45, int((gs + ps + fl) / 3))
+        radar = RadarDataOut(pronunciation=ps, grammar=gs, vocabulary=vo, fluency=fl, confidence=co)
+        feedback = FeedbackOut(grammar=gs, pronunciation=ps, fluency=fl)
     else:
-        radar = RadarDataOut(
-            pronunciation=0, grammar=0, vocabulary=0, fluency=0, confidence=0,
-        )
+        radar = RadarDataOut(pronunciation=0, grammar=0, vocabulary=0, fluency=0, confidence=0)
         feedback = FeedbackOut(grammar=0, pronunciation=0, fluency=0)
 
-    scenario_id = SCENARIO_NAMES.get(session.scenario, 1)
-    score = int(session.overall_score) if session.overall_score else 0
+    # Aggregate correction items from all dialogues in ReportData
+    correction_out = CorrectionOut(
+        original="", corrected="", items=[
+            {"wrong": item.get("wrong", ""), "correct": item.get("correct", ""), "reason": item.get("reason", "")}
+            for item in data.grammar_items
+        ]
+    ) if data.grammar_items else None
+
+    pronunciation_out = PronunciationOut(
+        text="", score=data.pronunciation_score, items=data.pronunciation_items
+    ) if data.pronunciation_items else None
+
+    # Compute vocabulary from conversation user texts
+    user_texts = [msg["user"] for msg in data.conversation if msg.get("user")]
+    all_words: list[str] = []
+    for text in user_texts:
+        all_words.extend(re.findall(r"[a-zA-Z]+", text.lower()))
+    total = len(all_words)
+    unique = len(set(all_words))
+    avg_len = round(sum(len(w) for w in all_words) / total, 1) if total else 0.0
+    wrong_words: set[str] = set()
+    for item in data.grammar_items:
+        w = item.get("wrong", "").lower()
+        wrong_words.update(re.findall(r"[a-zA-Z]+", w))
+    matched = len(wrong_words & set(all_words))
+    accuracy = round((total - matched) / total * 100) if total else 100
+    vocabulary = VocabularyOut(totalWords=total, uniqueWords=unique, avgWordLength=avg_len, accuracy=accuracy)
+
+    # Generate summary
+    summary_dict = await generate_summary(
+        scenario=data.scenario,
+        difficulty=data.difficulty,
+        grammar_score=data.grammar_score,
+        pronunciation_score=data.pronunciation_score,
+        overall_score=data.score,
+        total_words=total,
+        unique_words=unique,
+        accuracy=accuracy,
+        num_rounds=len(data.conversation),
+        grammar_errors=len(data.grammar_items),
+    )
+    summary_out = SummaryOut(**summary_dict) if summary_dict else None
+
+    scenario_id = SCENARIO_NAMES.get(data.scenario, 1)
 
     return SessionOut(
-        id=session.id,
+        id=report_id,
         scenarioId=scenario_id,
-        scenarioName=session.scenario,
+        scenarioName=data.scenario,
+        difficulty=data.difficulty,
         conversation=conversation,
         feedback=feedback,
         radarData=radar,
-        score=score,
-        duration=_fmt_duration(session.start_time, session.end_time),
+        vocabulary=vocabulary,
+        correction=correction_out,
+        pronunciation=pronunciation_out,
+        summary=summary_out,
+        score=data.score,
+        duration=data.duration,
     )
 
 
+@router.get("/{report_id}/preview", response_class=HTMLResponse)
+async def preview_report(report_id: int, db: AsyncSession = Depends(get_db)):
+    """Return an HTML page that embeds the PDF for preview."""
+    await _load_report_data(report_id, db)  # validates report exists
+    return build_pdf_preview_page(report_id)
+
+
+@router.get("/{report_id}/pdf")
+async def serve_pdf(report_id: int, db: AsyncSession = Depends(get_db)):
+    """Serve the PDF inline for embedding in the preview page."""
+    data = await _load_report_data(report_id, db)
+    pdf_bytes = build_pdf(data)
+    return Response(content=pdf_bytes, media_type="application/pdf")
+
+
 @router.get("/{report_id}/export")
-async def export_report(report_id: int):
-    """Placeholder for report export functionality."""
-    return {"message": "export not implemented"}
+async def export_report(report_id: int, db: AsyncSession = Depends(get_db)):
+    """Download the report as a PDF file."""
+    data = await _load_report_data(report_id, db)
+    pdf_bytes = build_pdf(data)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="speakmate-report-{report_id}.pdf"'},
+    )

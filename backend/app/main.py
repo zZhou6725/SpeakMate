@@ -8,19 +8,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.router import register_routers
 from .core.config import settings
 from .core.database import engine
-from .models.base import Base
+from .core.logging_config import setup_logging
+
+# Initialize logging before anything else
+setup_logging()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup/shutdown hook: create tables on startup."""
-    # Create data directory if needed
+    """Startup/shutdown hook: run migrations on startup."""
+    import asyncio
     import os
 
-    os.makedirs(os.path.dirname(settings.db_path) or ".", exist_ok=True)
+    from alembic import command
+    from alembic.config import Config
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    alembic_ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
+    alembic_cfg = Config(alembic_ini)
+    await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
     yield
     await engine.dispose()
 

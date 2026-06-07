@@ -42,6 +42,7 @@ def _fmt_duration(start, end):
 class ReportData:
     def __init__(self, session: PracticeSession, dialogues: list[Dialogue], evaluation: Evaluation | None):
         self.scenario = session.scenario
+        self.difficulty = getattr(session, "difficulty", "中等")
         self.score = int(session.overall_score) if session.overall_score else 0
         self.duration = _fmt_duration(session.start_time, session.end_time)
         self.start_time = session.start_time

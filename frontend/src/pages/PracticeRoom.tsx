@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import { useSpeech } from '../hooks/useSpeech';
 import ChatBubble from '../components/ChatBubble';
 import FeedbackPanel from '../components/FeedbackPanel';
 import MicButton from '../components/MicButton';
@@ -30,10 +31,21 @@ export default function PracticeRoom() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [textInput, setTextInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [speechOn, setSpeechOn] = useState(true);
+  const { speak, stop, toggle } = useSpeech();
+  const prevConvLen = useRef(conversation.length);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversation]);
+    // Auto-speak new AI messages
+    if (conversation.length > prevConvLen.current) {
+      const latest = conversation[conversation.length - 1];
+      if (latest.role === 'ai') {
+        speak(latest.message);
+      }
+    }
+    prevConvLen.current = conversation.length;
+  }, [conversation, speak]);
 
   const selected = scenarios.find((sc) => sc.id === selectedScenarioId);
   const role = selected ? (roleMap[selected.name] ?? '—') : '—';
@@ -87,12 +99,30 @@ export default function PracticeRoom() {
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-sm font-medium text-text">练习进行中</span>
           </div>
-          <button
-            onClick={handleEndSession}
-            className="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-blue-800 text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all shadow-sm shadow-red-500/20"
-          >
-            结束会话
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { const s = toggle(); setSpeechOn(s); }}
+              title={speechOn ? '关闭语音播报' : '开启语音播报'}
+              className={`p-2 rounded-lg transition-all ${
+                speechOn
+                  ? 'bg-primary-50 text-primary hover:bg-primary-100'
+                  : 'bg-gray-100 text-muted hover:bg-gray-200'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                {!speechOn && (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L21 12m0 0l-3.75 2.25M21 12l-3.75-2.25M21 12H9" />
+                )}
+              </svg>
+            </button>
+            <button
+              onClick={handleEndSession}
+              className="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-blue-800 text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all shadow-sm shadow-red-500/20"
+            >
+              结束会话
+            </button>
+          </div>
         </div>
 
         {/* Chat Messages */}

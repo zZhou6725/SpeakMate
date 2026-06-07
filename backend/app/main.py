@@ -9,7 +9,6 @@ from .api.router import register_routers
 from .core.config import settings
 from .core.database import engine
 from .core.logging_config import setup_logging
-from .models.base import Base
 
 # Initialize logging before anything else
 setup_logging()
@@ -17,14 +16,14 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup/shutdown hook: create tables on startup."""
-    # Create data directory if needed
+    """Startup/shutdown hook: run migrations on startup."""
     import os
+    from alembic.config import Config
+    from alembic import command
 
-    os.makedirs(os.path.dirname(settings.db_path) or ".", exist_ok=True)
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    alembic_ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
+    alembic_cfg = Config(alembic_ini)
+    command.upgrade(alembic_cfg, "head")
     yield
     await engine.dispose()
 

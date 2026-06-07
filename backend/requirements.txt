@@ -9,3 +9,4 @@ httpx>=0.24.0
 openai-whisper
 numpy
 reportlab>=4.0.0
+alembic>=1.13.0

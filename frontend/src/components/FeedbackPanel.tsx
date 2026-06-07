@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import type { FeedbackData, GrammarCorrection } from '../types';
+import type { FeedbackData, GrammarCorrection, PronunciationResult } from '../types';
 import ScoreRing from './ScoreRing';
 
 interface Props {
   data: FeedbackData;
   correction?: GrammarCorrection | null;
+  pronunciation?: PronunciationResult | null;
 }
 
-export default function FeedbackPanel({ data, correction }: Props) {
+export default function FeedbackPanel({ data, correction, pronunciation }: Props) {
   const [correctionOpen, setCorrectionOpen] = useState(true);
+  const [pronOpen, setPronOpen] = useState(true);
   const [vocabOpen, setVocabOpen] = useState(false);
 
   const correctionItems = correction?.items ?? [];
+  const pronItems = pronunciation?.items ?? [];
 
   return (
     <div className="space-y-3">
@@ -54,6 +57,41 @@ export default function FeedbackPanel({ data, correction }: Props) {
                     <span className="text-green-600 font-medium">{item.correct}</span>
                   </div>
                   <p className="text-xs text-muted">{item.reason}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Pronunciation Detail Panel */}
+      <div className="bg-white rounded-card shadow-sm border border-gray-100 overflow-hidden">
+        <button
+          onClick={() => setPronOpen(!pronOpen)}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-sm font-semibold text-text">发音详情</span>
+          <svg
+            className={`w-4 h-4 text-muted transition-transform duration-200 ${pronOpen ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {pronOpen && (
+          <div className="px-4 pb-4 space-y-2">
+            {pronItems.length === 0 ? (
+              <p className="text-xs text-muted py-2 text-center">
+                {pronunciation ? '未检测到发音难点' : '发送消息后自动分析发音'}
+              </p>
+            ) : (
+              pronItems.map((item, i) => (
+                <div key={i} className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                  <div className="flex items-center gap-2 text-sm mb-1">
+                    <span className="text-blue-700 font-semibold">{item.word}</span>
+                    <span className="text-muted text-xs">{item.phonetic}</span>
+                  </div>
+                  <p className="text-xs text-muted">{item.tip}</p>
                 </div>
               ))
             )}

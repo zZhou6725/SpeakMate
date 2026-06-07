@@ -56,6 +56,18 @@ export interface GrammarCorrection {
   items: CorrectionItem[];
 }
 
+export interface PronunciationItem {
+  word: string;
+  phonetic: string;
+  tip: string;
+}
+
+export interface PronunciationResult {
+  text: string;
+  score: number;
+  items: PronunciationItem[];
+}
+
 export interface PracticeSession {
   id: number;
   scenarioId: number;

@@ -1,5 +1,6 @@
 """Chat / Practice Session API — core conversation flow."""
 
+import asyncio
 import json
 import random
 from datetime import datetime
@@ -24,7 +25,9 @@ from ..schemas.chat import (
 )
 from ..agents.conversation_agent import generate_ai_reply, generate_ai_reply_stream
 from ..agents.correction_agent import check_grammar
+from ..agents.pronunciation_agent import check_pronunciation
 from ..schemas.correction import CorrectionOut
+from ..schemas.pronunciation import PronunciationOut
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -137,8 +140,11 @@ async def send_message(
     )
     all_dialogues = result.scalars().all()
 
-    # Grammar check first (quick, non-streaming)
-    correction_dict = await check_grammar(body.message)
+    # Run grammar check and pronunciation check in parallel
+    correction_dict, pronunciation_dict = await asyncio.gather(
+        check_grammar(body.message),
+        check_pronunciation(body.message),
+    )
     grammar_correction = correction_dict if correction_dict.get("items") else None
 
     async def sse_stream():
@@ -162,6 +168,9 @@ async def send_message(
         ))
 
         feedback = _generate_feedback()
+        # Override pronunciation score with LLM-based result if available
+        if pronunciation_dict and pronunciation_dict.get("score", 0) > 0:
+            feedback.pronunciation = pronunciation_dict["score"]
 
         db.add(Dialogue(
             session_id=session_id,
@@ -174,6 +183,7 @@ async def send_message(
         await db.flush()
 
         correction_out = CorrectionOut(**correction_dict) if correction_dict else None
+        pronunciation_out = PronunciationOut(**pronunciation_dict) if pronunciation_dict else None
 
         done_payload = {
             "type": "done",
@@ -185,6 +195,7 @@ async def send_message(
                 "fluency": feedback.fluency,
             },
             "correction": correction_out.model_dump() if correction_out else None,
+            "pronunciation": pronunciation_out.model_dump() if pronunciation_out else None,
         }
         yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
 

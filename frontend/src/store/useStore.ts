@@ -9,6 +9,7 @@ import type {
   HistoryFiltersType,
   PracticeSession,
   GrammarCorrection,
+  PronunciationResult,
 } from '../types';
 import { fetchScenarios } from '../api/scenarios';
 import { fetchDashboardStats } from '../api/dashboard';
@@ -47,6 +48,7 @@ interface AppState {
   currentSessionId: number | null;
   lastReport: PracticeSession | null;
   correction: GrammarCorrection | null;
+  pronunciation: PronunciationResult | null;
 
   startSession: () => Promise<void>;
   sendMessageAction: (text: string) => Promise<void>;
@@ -118,6 +120,7 @@ export const useStore = create<AppState>((set, get) => ({
   currentSessionId: null,
   lastReport: null,
   correction: null,
+  pronunciation: null,
 
   startSession: async () => {
     const { selectedScenarioId } = get();
@@ -165,6 +168,7 @@ export const useStore = create<AppState>((set, get) => ({
               conversation: updated,
               feedback: result.feedback,
               correction: result.correction ?? null,
+              pronunciation: result.pronunciation ?? null,
             };
           });
         },

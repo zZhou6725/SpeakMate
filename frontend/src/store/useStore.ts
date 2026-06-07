@@ -8,11 +8,12 @@ import type {
   HistoryEntry,
   HistoryFiltersType,
   PracticeSession,
+  GrammarCorrection,
 } from '../types';
 import { fetchScenarios } from '../api/scenarios';
 import { fetchDashboardStats } from '../api/dashboard';
 import { fetchHistory, fetchHistoryFilters } from '../api/history';
-import { createSession, sendMessage, endSession } from '../api/sessions';
+import { createSession, sendMessageStream, endSession } from '../api/sessions';
 
 interface AppState {
   // Scenarios
@@ -45,6 +46,7 @@ interface AppState {
   sessionScore: number;
   currentSessionId: number | null;
   lastReport: PracticeSession | null;
+  correction: GrammarCorrection | null;
 
   startSession: () => Promise<void>;
   sendMessageAction: (text: string) => Promise<void>;
@@ -115,6 +117,7 @@ export const useStore = create<AppState>((set, get) => ({
   sessionScore: 0,
   currentSessionId: null,
   lastReport: null,
+  correction: null,
 
   startSession: async () => {
     const { selectedScenarioId } = get();
@@ -133,11 +136,42 @@ export const useStore = create<AppState>((set, get) => ({
   sendMessageAction: async (text: string) => {
     const { currentSessionId, conversation } = get();
     if (!currentSessionId) return;
-    const result = await sendMessage(currentSessionId, text);
-    set({
-      conversation: [...conversation, result.userMessage, result.aiMessage],
-      feedback: result.feedback,
-    });
+
+    const userMsg: ChatMessage = { role: 'user', message: text };
+    const aiPlaceholder: ChatMessage = { role: 'ai', message: '' };
+    set({ conversation: [...conversation, userMsg, aiPlaceholder] });
+
+    try {
+      await sendMessageStream(
+        currentSessionId,
+        text,
+        (token) => {
+          set((state) => {
+            const updated = [...state.conversation];
+            const lastIdx = updated.length - 1;
+            updated[lastIdx] = {
+              ...updated[lastIdx],
+              message: updated[lastIdx].message + token,
+            };
+            return { conversation: updated };
+          });
+        },
+        (result) => {
+          set((state) => {
+            const updated = [...state.conversation];
+            const lastIdx = updated.length - 1;
+            updated[lastIdx] = result.aiMessage;
+            return {
+              conversation: updated,
+              feedback: result.feedback,
+              correction: result.correction ?? null,
+            };
+          });
+        },
+      );
+    } catch {
+      // leave partial message on failure
+    }
   },
 
   endSessionAction: async () => {

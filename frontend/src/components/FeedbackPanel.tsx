@@ -1,33 +1,17 @@
 import { useState } from 'react';
-import type { FeedbackData } from '../types';
+import type { FeedbackData, GrammarCorrection } from '../types';
 import ScoreRing from './ScoreRing';
 
 interface Props {
   data: FeedbackData;
+  correction?: GrammarCorrection | null;
 }
 
-interface CorrectionItem {
-  wrong: string;
-  correct: string;
-  reason: string;
-}
-
-const mockCorrections: CorrectionItem[] = [
-  { wrong: 'I go to store', correct: 'I go to the store', reason: '缺少冠词' },
-  { wrong: 'He speak English', correct: 'He speaks English', reason: '主谓一致' },
-  { wrong: 'more better', correct: 'better', reason: '重复比较' },
-];
-
-const mockVocabStats = {
-  totalWords: 156,
-  uniqueWords: 84,
-  newWords: 12,
-  accuracy: 87,
-};
-
-export default function FeedbackPanel({ data }: Props) {
+export default function FeedbackPanel({ data, correction }: Props) {
   const [correctionOpen, setCorrectionOpen] = useState(true);
   const [vocabOpen, setVocabOpen] = useState(false);
+
+  const correctionItems = correction?.items ?? [];
 
   return (
     <div className="space-y-3">
@@ -57,16 +41,22 @@ export default function FeedbackPanel({ data }: Props) {
         </button>
         {correctionOpen && (
           <div className="px-4 pb-4 space-y-2">
-            {mockCorrections.map((item, i) => (
-              <div key={i} className="bg-red-50 rounded-lg p-3 border border-red-100">
-                <div className="flex items-center gap-2 text-sm mb-1">
-                  <span className="line-through text-red-500 font-medium">{item.wrong}</span>
-                  <span className="text-muted">→</span>
-                  <span className="text-green-600 font-medium">{item.correct}</span>
+            {correctionItems.length === 0 ? (
+              <p className="text-xs text-muted py-2 text-center">
+                {correction ? '未检测到语法错误' : '发送消息后自动检测语法'}
+              </p>
+            ) : (
+              correctionItems.map((item, i) => (
+                <div key={i} className="bg-red-50 rounded-lg p-3 border border-red-100">
+                  <div className="flex items-center gap-2 text-sm mb-1">
+                    <span className="line-through text-red-500 font-medium">{item.wrong}</span>
+                    <span className="text-muted">→</span>
+                    <span className="text-green-600 font-medium">{item.correct}</span>
+                  </div>
+                  <p className="text-xs text-muted">{item.reason}</p>
                 </div>
-                <p className="text-xs text-muted">{item.reason}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
@@ -89,19 +79,19 @@ export default function FeedbackPanel({ data }: Props) {
           <div className="px-4 pb-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">{mockVocabStats.totalWords}</p>
+                <p className="text-lg font-bold text-text">—</p>
                 <p className="text-xs text-muted">总词数</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">{mockVocabStats.uniqueWords}</p>
+                <p className="text-lg font-bold text-text">—</p>
                 <p className="text-xs text-muted">不重复词</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">{mockVocabStats.newWords}</p>
+                <p className="text-lg font-bold text-text">—</p>
                 <p className="text-xs text-muted">新词</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">{mockVocabStats.accuracy}%</p>
+                <p className="text-lg font-bold text-text">—</p>
                 <p className="text-xs text-muted">用词准确率</p>
               </div>
             </div>

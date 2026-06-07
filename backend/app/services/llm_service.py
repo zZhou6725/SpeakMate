@@ -69,6 +69,52 @@ async def chat_completion(
     return choice["message"]["content"]
 
 
+async def chat_completion_stream(
+    messages: list[dict[str, str]],
+    model: str | None = None,
+    temperature: float = 0.7,
+    max_tokens: int = 500,
+):
+    """Stream chat completion tokens one by one via SSE.
+
+    Yields each content delta as a string. Raises same errors as chat_completion().
+    """
+    api_key = settings.llm_api_key
+    if not api_key or api_key == "your-api-key-here":
+        raise ValueError(
+            "LLM_API_KEY is not configured. Set it in backend/.env to your API key."
+        )
+
+    payload = {
+        "model": model or settings.llm_model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": True,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    url = _chat_url()
+    async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
+        async with client.stream("POST", url, json=payload, headers=headers) as response:
+            response.raise_for_status()
+            async for line in response.aiter_lines():
+                if line.startswith("data: "):
+                    data_str = line[6:]
+                    if data_str.strip() == "[DONE]":
+                        break
+                    import json
+                    data = json.loads(data_str)
+                    delta = data["choices"][0].get("delta", {})
+                    content = delta.get("content", "")
+                    if content:
+                        yield content
+
+
 def is_llm_configured() -> bool:
     """Check whether a real LLM API key has been set."""
     key = settings.llm_api_key

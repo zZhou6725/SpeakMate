@@ -1,9 +1,11 @@
 """Chat / Practice Session API — core conversation flow."""
 
+import json
 import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +22,9 @@ from ..schemas.chat import (
     MessageIn,
     MessageOut,
 )
-from ..agents.conversation_agent import generate_ai_reply
+from ..agents.conversation_agent import generate_ai_reply, generate_ai_reply_stream
+from ..agents.correction_agent import check_grammar
+from ..schemas.correction import CorrectionOut
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -115,54 +119,76 @@ async def create_session(
     )
 
 
-@router.post("/{session_id}/messages", response_model=MessageOut)
+@router.post("/{session_id}/messages")
 async def send_message(
     session_id: int,
     body: MessageIn,
     db: AsyncSession = Depends(get_db),
 ):
-    """Receive user message, return AI reply + simulated feedback."""
+    """Receive user message, stream AI reply via SSE, return final structured result."""
     session = await db.get(PracticeSession, session_id)
     if not session:
         raise HTTPException(404, "Session not found")
 
     now = datetime(2026, 6, 6, 10, 0)
 
-    # Load all existing dialogues for context
     result = await db.execute(
         select(Dialogue).where(Dialogue.session_id == session_id)
     )
     all_dialogues = result.scalars().all()
 
-    # Generate AI reply via LLM agent (with script fallback if LLM unavailable)
-    ai_text = await generate_ai_reply(
-        scenario=session.scenario,
-        difficulty=session.difficulty,
-        dialogues=list(all_dialogues),
-        current_user_text=body.message,
-    )
+    # Grammar check first (quick, non-streaming)
+    correction_dict = await check_grammar(body.message)
+    grammar_correction = correction_dict if correction_dict.get("items") else None
 
-    # Save user message
-    db.add(Dialogue(session_id=session_id, user_text=body.message, timestamp=now))
+    async def sse_stream():
+        # Stream AI reply tokens
+        full_reply = ""
+        async for token in generate_ai_reply_stream(
+            scenario=session.scenario,
+            difficulty=session.difficulty,
+            dialogues=list(all_dialogues),
+            current_user_text=body.message,
+        ):
+            full_reply += token
+            yield f"data: {json.dumps({'type': 'token', 'content': token}, ensure_ascii=False)}\n\n"
 
-    feedback = _generate_feedback()
+        # Save both messages to DB after stream completes
+        db.add(Dialogue(
+            session_id=session_id,
+            user_text=body.message,
+            grammar_correction=grammar_correction,
+            timestamp=now,
+        ))
 
-    # Save AI message
-    db.add(Dialogue(
-        session_id=session_id,
-        ai_text=ai_text,
-        pronunciation_score=float(feedback.pronunciation),
-        timestamp=now,
-    ))
+        feedback = _generate_feedback()
 
-    session.total_rounds += 1
-    await db.flush()
+        db.add(Dialogue(
+            session_id=session_id,
+            ai_text=full_reply,
+            pronunciation_score=float(feedback.pronunciation),
+            timestamp=now,
+        ))
 
-    return MessageOut(
-        userMessage=ChatMessageOut(role="user", message=body.message),
-        aiMessage=ChatMessageOut(role="ai", message=ai_text),
-        feedback=feedback,
-    )
+        session.total_rounds += 1
+        await db.flush()
+
+        correction_out = CorrectionOut(**correction_dict) if correction_dict else None
+
+        done_payload = {
+            "type": "done",
+            "userMessage": {"role": "user", "message": body.message},
+            "aiMessage": {"role": "ai", "message": full_reply},
+            "feedback": {
+                "grammar": feedback.grammar,
+                "pronunciation": feedback.pronunciation,
+                "fluency": feedback.fluency,
+            },
+            "correction": correction_out.model_dump() if correction_out else None,
+        }
+        yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(sse_stream(), media_type="text/event-stream")
 
 
 @router.post("/{session_id}/end", response_model=SessionOut)

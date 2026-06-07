@@ -40,6 +40,13 @@ class VocabularyOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class SummaryOut(BaseModel):
+    overall: str
+    strengths: list[str]
+    improvements: list[str]
+    tips: list[str]
+
+
 class SessionCreateIn(BaseModel):
     scenarioId: int
     difficulty: str = "中等"
@@ -56,6 +63,7 @@ class SessionOut(BaseModel):
     vocabulary: VocabularyOut | None = None
     correction: CorrectionOut | None = None
     pronunciation: PronunciationOut | None = None
+    summary: SummaryOut | None = None
     score: int
     duration: str
 

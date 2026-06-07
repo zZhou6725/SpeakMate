@@ -133,6 +133,68 @@ export default function Report() {
         </div>
       </div>
 
+      {/* Session Summary — after-lesson review */}
+      {session.summary && (
+        <div className="glass-card rounded-2xl p-6 mb-6">
+          <h3 className="text-sm font-semibold text-text mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M15 12h.01M9 16h3.75M15 16h.01M9 20h3.75M15 20h.01M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+            </svg>
+            课后总结
+          </h3>
+          <p className="text-text text-sm leading-relaxed mb-6 bg-primary-50/50 rounded-xl p-4 border border-primary/10">
+            {session.summary.overall}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Strengths */}
+            <div>
+              <h4 className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" /></svg>
+                优点
+              </h4>
+              <ul className="space-y-2">
+                {session.summary.strengths.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-text">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Improvements */}
+            <div>
+              <h4 className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                待改进
+              </h4>
+              <ul className="space-y-2">
+                {session.summary.improvements.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-text">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Tips */}
+            <div>
+              <h4 className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                学习建议
+              </h4>
+              <ul className="space-y-2">
+                {session.summary.tips.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-text">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Feedback + Conversation */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass-card rounded-2xl p-5">

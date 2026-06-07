@@ -68,6 +68,13 @@ export interface PronunciationResult {
   items: PronunciationItem[];
 }
 
+export interface SessionSummary {
+  overall: string;
+  strengths: string[];
+  improvements: string[];
+  tips: string[];
+}
+
 export interface VocabularyStats {
   totalWords: number;
   uniqueWords: number;
@@ -86,6 +93,7 @@ export interface PracticeSession {
   vocabulary: VocabularyStats | null;
   correction?: GrammarCorrection | null;
   pronunciation?: PronunciationResult | null;
+  summary?: SessionSummary | null;
   score: number;
   duration: string;
 }

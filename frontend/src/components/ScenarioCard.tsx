@@ -6,12 +6,6 @@ interface Props {
   onSelect: (id: number) => void;
 }
 
-const difficultyColors: Record<Scenario['difficulty'], string> = {
-  简单: 'bg-green-50 text-green-700 border-green-200',
-  中等: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  困难: 'bg-red-50 text-red-700 border-red-200',
-};
-
 const sceneConfig: Record<string, { emoji: string; bg: string; label: string; accent: string }> = {
   面试: { emoji: '👔', bg: 'from-blue-50 to-blue-100', label: 'Interview', accent: 'bg-blue-500' },
   餐厅: { emoji: '🍽️', bg: 'from-orange-50 to-orange-100', label: 'Restaurant', accent: 'bg-orange-500' },

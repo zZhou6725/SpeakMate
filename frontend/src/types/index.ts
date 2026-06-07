@@ -68,6 +68,13 @@ export interface PronunciationResult {
   items: PronunciationItem[];
 }
 
+export interface VocabularyStats {
+  totalWords: number;
+  uniqueWords: number;
+  avgWordLength: number;
+  accuracy: number;
+}
+
 export interface PracticeSession {
   id: number;
   scenarioId: number;
@@ -75,6 +82,7 @@ export interface PracticeSession {
   conversation: ChatMessage[];
   feedback: FeedbackData;
   radarData: RadarData;
+  vocabulary: VocabularyStats | null;
   score: number;
   duration: string;
 }

@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import type { FeedbackData, GrammarCorrection, PronunciationResult } from '../types';
+import type { FeedbackData, GrammarCorrection, PronunciationResult, VocabularyStats } from '../types';
 import ScoreRing from './ScoreRing';
 
 interface Props {
   data: FeedbackData;
   correction?: GrammarCorrection | null;
   pronunciation?: PronunciationResult | null;
+  vocabulary?: VocabularyStats | null;
 }
 
-export default function FeedbackPanel({ data, correction, pronunciation }: Props) {
+export default function FeedbackPanel({ data, correction, pronunciation, vocabulary }: Props) {
   const [correctionOpen, setCorrectionOpen] = useState(true);
   const [pronOpen, setPronOpen] = useState(true);
   const [vocabOpen, setVocabOpen] = useState(false);
@@ -117,19 +118,19 @@ export default function FeedbackPanel({ data, correction, pronunciation }: Props
           <div className="px-4 pb-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">—</p>
+                <p className="text-lg font-bold text-text">{vocabulary?.totalWords ?? '—'}</p>
                 <p className="text-xs text-muted">总词数</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">—</p>
+                <p className="text-lg font-bold text-text">{vocabulary?.uniqueWords ?? '—'}</p>
                 <p className="text-xs text-muted">不重复词</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">—</p>
-                <p className="text-xs text-muted">新词</p>
+                <p className="text-lg font-bold text-text">{vocabulary?.avgWordLength ?? '—'}</p>
+                <p className="text-xs text-muted">平均词长</p>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-text">—</p>
+                <p className="text-lg font-bold text-text">{vocabulary ? `${vocabulary.accuracy}%` : '—'}</p>
                 <p className="text-xs text-muted">用词准确率</p>
               </div>
             </div>

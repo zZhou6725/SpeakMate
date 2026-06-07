@@ -31,6 +31,15 @@ class RadarDataOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class VocabularyOut(BaseModel):
+    totalWords: int
+    uniqueWords: int
+    avgWordLength: float
+    accuracy: int
+
+    model_config = {"from_attributes": True}
+
+
 class SessionCreateIn(BaseModel):
     scenarioId: int
 
@@ -42,6 +51,7 @@ class SessionOut(BaseModel):
     conversation: list[ChatMessageOut]
     feedback: FeedbackOut
     radarData: RadarDataOut
+    vocabulary: VocabularyOut | None = None
     score: int
     duration: str
 

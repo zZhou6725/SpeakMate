@@ -101,7 +101,7 @@ export default function Dashboard() {
               onClick={() => selectDifficulty(d)}
               className={`px-8 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 min-w-[120px] ${
                 selectedDifficulty === d
-                  ? 'bg-primary text-blue-800 shadow-lg shadow-primary/25 scale-105'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
                   : 'glass-card text-muted hover:text-text hover:shadow-md'
               }`}
             >
@@ -118,7 +118,7 @@ export default function Dashboard() {
           disabled={!selectedScenarioId || starting}
           className={`px-24 py-4 rounded-2xl font-bold text-lg transition-all duration-300 min-w-[300px] ${
             selectedScenarioId && !starting
-              ? 'bg-hero-gradient text-blue-800 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]'
+              ? 'bg-hero-gradient text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

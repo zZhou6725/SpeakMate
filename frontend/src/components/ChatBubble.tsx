@@ -46,10 +46,10 @@ export default function ChatBubble({ role, message, onReplay }: Props) {
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
             isAI
               ? 'glass-card rounded-tl-md'
-              : 'bg-hero-gradient text-blue-800 rounded-tr-md shadow-md shadow-primary/20'
+              : 'bg-hero-gradient text-white rounded-tr-md shadow-md shadow-primary/20'
           }`}
         >
-          <p className={`text-xs font-semibold mb-1 ${isAI ? 'text-primary/60' : 'text-blue-200'}`}>
+          <p className={`text-xs font-semibold mb-1 ${isAI ? 'text-primary/60' : 'text-blue-100'}`}>
             {isAI ? 'AI' : '你'}
           </p>
           <p>{message}</p>

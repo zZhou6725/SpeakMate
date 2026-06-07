@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { cleanForSpeech } from '../utils/cleanText';
 
 export function useSpeech() {
   const enabledRef = useRef(true);
@@ -40,7 +41,8 @@ export function useSpeech() {
 
     synth.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const cleaned = cleanForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(cleaned);
     utterance.lang = 'en-US';
     utterance.rate = 0.9;
     utterance.pitch = 1.0;

@@ -1,3 +1,4 @@
+import { cleanForSpeech } from '../utils/cleanText';
 import type { ChatMessage } from '../types';
 
 interface Props {
@@ -12,7 +13,8 @@ export default function ChatBubble({ role, message, onReplay }: Props) {
   const handleReplay = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(message);
+      const cleaned = cleanForSpeech(message);
+      const utterance = new SpeechSynthesisUtterance(cleaned);
       utterance.lang = 'en-US';
       utterance.rate = 0.9;
       const voices = window.speechSynthesis.getVoices();

@@ -15,6 +15,8 @@ export default function Dashboard() {
     loadDashboardStats,
     selectedScenarioId,
     selectScenario,
+    selectedDifficulty,
+    selectDifficulty,
     startSession,
   } = useStore();
   const [starting, setStarting] = useState(false);
@@ -82,6 +84,24 @@ export default function Dashboard() {
             />
           ))
         )}
+      </div>
+
+      {/* Difficulty Selection */}
+      <h2 className="text-lg font-semibold text-text mb-4 text-center">选择难度</h2>
+      <div className="flex justify-center gap-3 mb-10">
+        {(['简单', '中等', '困难'] as const).map((d) => (
+          <button
+            key={d}
+            onClick={() => selectDifficulty(d)}
+            className={`px-6 py-3 rounded-card text-sm font-medium transition-all duration-200 border-2 min-w-[100px] ${
+              selectedDifficulty === d
+                ? 'border-primary bg-primary/5 text-primary shadow-sm'
+                : 'border-gray-200 bg-white text-muted hover:border-gray-300'
+            }`}
+          >
+            {d}
+          </button>
+        ))}
       </div>
 
       {/* Start Button */}

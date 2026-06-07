@@ -25,3 +25,4 @@ api_router.include_router(speech_router)
 def register_routers(app):
     """Attach all API routers to the FastAPI app."""
     app.include_router(api_router)
+

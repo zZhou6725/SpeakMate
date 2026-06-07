@@ -79,6 +79,7 @@ export interface PracticeSession {
   id: number;
   scenarioId: number;
   scenarioName: string;
+  difficulty: string;
   conversation: ChatMessage[];
   feedback: FeedbackData;
   radarData: RadarData;

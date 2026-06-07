@@ -129,7 +129,7 @@ async def create_session(
     now = datetime.now()
     session = PracticeSession(
         scenario=scenario_name,
-        difficulty="中等",
+        difficulty=body.difficulty,
         start_time=now,
         total_rounds=0,
     )
@@ -149,6 +149,7 @@ async def create_session(
         id=session.id,
         scenarioId=body.scenarioId,
         scenarioName=scenario_name,
+        difficulty=body.difficulty,
         conversation=[ChatMessageOut(role="ai", message=opening)],
         feedback=FeedbackOut(grammar=0, pronunciation=0, fluency=0),
         radarData=RadarDataOut(pronunciation=0, grammar=0, vocabulary=0, fluency=0, confidence=0),
@@ -310,6 +311,7 @@ async def end_session(
         id=session.id,
         scenarioId=scenario_id,
         scenarioName=session.scenario,
+        difficulty=session.difficulty,
         conversation=conversation,
         feedback=FeedbackOut(
             grammar=radar.grammar,

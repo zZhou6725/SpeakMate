@@ -103,7 +103,7 @@ async def create_session(
     if not scenario_name:
         raise HTTPException(400, f"Unknown scenarioId: {body.scenarioId}")
 
-    now = datetime(2026, 6, 6, 10, 0)
+    now = datetime.now()
     session = PracticeSession(
         scenario=scenario_name,
         difficulty="中等",
@@ -145,7 +145,7 @@ async def send_message(
     if not session:
         raise HTTPException(404, "Session not found")
 
-    now = datetime(2026, 6, 6, 10, 0)
+    now = datetime.now()
 
     result = await db.execute(
         select(Dialogue).where(Dialogue.session_id == session_id)
@@ -221,7 +221,7 @@ async def end_session(
     if not session:
         raise HTTPException(404, "Session not found")
 
-    now = datetime(2026, 6, 6, 10, 11)
+    now = datetime.now()
     session.end_time = now
 
     # Calculate average score from feedbacks

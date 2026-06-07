@@ -74,7 +74,7 @@ export default function MicButton({ onTranscription }: Props) {
             disabled
             className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 shadow-md cursor-wait"
           >
-            <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-6 h-6 text-blue-800 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" opacity={0.3} />
               <path d="M12 2a10 10 0 019.95 9" />
             </svg>
@@ -88,7 +88,7 @@ export default function MicButton({ onTranscription }: Props) {
                 : 'bg-primary hover:bg-blue-700 hover:scale-105 shadow-blue-200'
             }`}
           >
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-6 h-6 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               {status === 'recording' ? (
                 <rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" />
               ) : (
